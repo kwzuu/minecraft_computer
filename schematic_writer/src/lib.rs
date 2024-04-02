@@ -1,10 +1,12 @@
-use std::ops::Deref;
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use quartz_nbt::{compound, NbtCompound, NbtList};
+use std::ops::Deref;
+use std::time::{SystemTime, UNIX_EPOCH};
+use varint::VarintArray;
+
+mod varint;
 
 #[macro_use]
 extern crate derive_builder;
-
 
 trait ReinterpretCast<T> {
     fn reinterpret_cast(&self) -> T;
@@ -59,77 +61,9 @@ impl Blocks {
 }
 
 #[derive(Clone)]
-struct Palette {
-
-}
+struct Palette {}
 
 impl Palette {
-    fn to_nbt(&self) -> NbtCompound {
-        todo!()
-    }
-}
-
-#[derive(Clone)]
-pub struct VarintArray {
-    bytes: Vec<u8>
-}
-
-impl VarintArray {
-    fn take(self) -> Vec<u8> {
-        self.bytes
-    }
-
-    fn bytes(&self) -> &[u8] {
-        &self.bytes
-    }
-
-    pub fn new() -> Self {
-        Self {
-            bytes: vec![],
-        }
-    }
-
-    fn push_byte(&mut self, byte: u8) {
-        self.bytes.push(byte)
-    }
-    fn push_u32(&mut self, mut value: u32) {
-        const SEGMENT_BITS: u32 = 0x7f;
-        const CONTINUE_BIT: u32 = 0x80;
-
-        loop {
-            if value & !SEGMENT_BITS == 0 {
-                self.push_byte(value as u8);
-                return
-            }
-
-            self.push_byte((value & SEGMENT_BITS | CONTINUE_BIT) as u8);
-            value >>= 7;
-        }
-    }
-
-    fn push_u64(&mut self, mut value: u64) {
-        const SEGMENT_BITS: u64 = 0x7f;
-        const CONTINUE_BIT: u64 = 0x80;
-
-        loop {
-            if value & !SEGMENT_BITS == 0 {
-                self.push_byte(value as u8);
-                return
-            }
-
-            self.push_byte((value & SEGMENT_BITS | CONTINUE_BIT) as u8);
-            value >>= 7;
-        }
-    }
-
-    pub fn push_int(&mut self, value: i32) {
-        self.push_u32(u32::from_ne_bytes(value.to_ne_bytes()));
-    }
-
-    pub fn push_long(&mut self, value: i64) {
-        self.push_u64(u64::from_ne_bytes(value.to_ne_bytes()));
-    }
-
     fn to_nbt(&self) -> NbtCompound {
         todo!()
     }
@@ -151,9 +85,7 @@ impl Biomes {
 }
 
 #[derive(Clone)]
-struct Entities {
-
-}
+struct Entities {}
 
 impl Entities {
     fn to_nbt(&self) -> NbtCompound {
