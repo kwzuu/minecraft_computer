@@ -2,6 +2,10 @@ use std::ops::Deref;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use quartz_nbt::{compound, NbtCompound, NbtList};
 
+#[macro_use]
+extern crate derive_builder;
+
+
 trait ReinterpretCast<T> {
     fn reinterpret_cast(&self) -> T;
 }
@@ -12,7 +16,7 @@ impl ReinterpretCast<i16> for u16 {
     }
 }
 
-
+#[derive(Clone)]
 struct Metadata {
     name: String,
     author: String,
@@ -31,6 +35,7 @@ impl Metadata {
         }
     }
 }
+#[derive(Clone)]
 struct Blocks {
     palette: Palette,
 }
@@ -53,6 +58,7 @@ impl Blocks {
     }
 }
 
+#[derive(Clone)]
 struct Palette {
 
 }
@@ -63,6 +69,7 @@ impl Palette {
     }
 }
 
+#[derive(Clone)]
 struct Biomes {
 
 }
@@ -73,6 +80,7 @@ impl Biomes {
     }
 }
 
+#[derive(Clone)]
 struct Entities {
 
 }
@@ -82,6 +90,8 @@ impl Entities {
         todo!()
     }
 }
+
+#[derive(Builder)]
 struct Schematic {
     dims: (u16, u16, u16),
     offset: (i32, i32, i32),
@@ -91,13 +101,7 @@ struct Schematic {
     entities: Entities,
 }
 
-
-
 impl Schematic {
-    pub fn builder() -> SchematicBuilder {
-        SchematicBuilder::new()
-    }
-
     pub fn to_nbt(&self) -> NbtCompound {
         compound! {
             "Version": 3i32,
@@ -112,25 +116,4 @@ impl Schematic {
             "Entities": self.entities.to_nbt(),
         }
     }
-}
-
-struct SchematicBuilder {
-
-}
-
-impl SchematicBuilder {
-    pub fn new() -> Self {
-
-    }
-
-    pub fn block(mut self, block: Block)
-
-    pub fn build(&self) -> Schematic {
-        todo!()
-    }
-}
-
-struct Block {
-    name: String,
-    nbt: Option<NbtCompound>
 }
