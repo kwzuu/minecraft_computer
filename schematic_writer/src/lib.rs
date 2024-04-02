@@ -70,13 +70,83 @@ impl Palette {
 }
 
 #[derive(Clone)]
-struct Biomes {
+pub struct VarintArray {
+    bytes: Vec<u8>
+}
 
+impl VarintArray {
+    fn take(self) -> Vec<u8> {
+        self.bytes
+    }
+
+    fn bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+
+    pub fn new() -> Self {
+        Self {
+            bytes: vec![],
+        }
+    }
+
+    fn push_byte(&mut self, byte: u8) {
+        self.bytes.push(byte)
+    }
+    fn push_u32(&mut self, mut value: u32) {
+        const SEGMENT_BITS: u32 = 0x7f;
+        const CONTINUE_BIT: u32 = 0x80;
+
+        loop {
+            if value & !SEGMENT_BITS == 0 {
+                self.push_byte(value as u8);
+                return
+            }
+
+            self.push_byte((value & SEGMENT_BITS | CONTINUE_BIT) as u8);
+            value >>= 7;
+        }
+    }
+
+    fn push_u64(&mut self, mut value: u64) {
+        const SEGMENT_BITS: u64 = 0x7f;
+        const CONTINUE_BIT: u64 = 0x80;
+
+        loop {
+            if value & !SEGMENT_BITS == 0 {
+                self.push_byte(value as u8);
+                return
+            }
+
+            self.push_byte((value & SEGMENT_BITS | CONTINUE_BIT) as u8);
+            value >>= 7;
+        }
+    }
+
+    pub fn push_int(&mut self, value: i32) {
+        self.push_u32(u32::from_ne_bytes(value.to_ne_bytes()));
+    }
+
+    pub fn push_long(&mut self, value: i64) {
+        self.push_u64(u64::from_ne_bytes(value.to_ne_bytes()));
+    }
+
+    fn to_nbt(&self) -> NbtCompound {
+        todo!()
+    }
+}
+
+#[derive(Clone)]
+struct Biomes {
+    palette: Palette,
+    data: VarintArray,
 }
 
 impl Biomes {
     fn to_nbt(&self) -> NbtCompound {
-        todo!()
+        compound! {
+            "Palette": self.palette.to_nbt(),
+            "Data": self.data.to_nbt(),
+        }
     }
 }
 
