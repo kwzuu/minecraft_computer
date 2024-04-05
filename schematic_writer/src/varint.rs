@@ -8,11 +8,11 @@ pub struct VarintArray {
 }
 
 impl VarintArray {
-    fn take(self) -> Vec<i8> {
+    pub fn take(self) -> Vec<i8> {
         self.bytes
     }
 
-    fn bytes(&self) -> &[i8] {
+    pub fn bytes(&self) -> &[i8] {
         &self.bytes
     }
 
@@ -109,5 +109,15 @@ mod tests {
         assert_eq!(varlong(-1), vec![-0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, 0x01]);
         assert_eq!(varlong(-2147483648), vec![-0x80, -0x80, -0x80, -0x80, -0x08, -0x01, -0x01, -0x01, -0x01, 0x01]);
         assert_eq!(varlong(-9223372036854775808), vec![-0x80, -0x80, -0x80, -0x80, -0x80, -0x80, -0x80, -0x80, -0x80, 0x01]);
+    }
+
+    #[test]
+    fn test_bytes() {
+        let mut v = VarintArray::new();
+        assert_eq!(v.bytes(), &[]);
+        v.push_int(128);
+        assert_eq!(v.bytes(), &[-0x80, 0x01]);
+        v.push_int(2);
+        assert_eq!(v.bytes(), &[-0x80, 0x01, 0x02]);
     }
 }

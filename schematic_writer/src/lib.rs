@@ -1,7 +1,5 @@
 use quartz_nbt::{compound, NbtCompound, NbtList};
-use std::ops::Deref;
 use std::time::{SystemTime, UNIX_EPOCH};
-use nbt_tag_extensions::NbtTagExtensions;
 use palette::Palette;
 use varint::VarintArray;
 
@@ -44,23 +42,25 @@ impl Metadata {
 #[derive(Clone)]
 struct Blocks {
     palette: Palette,
+    data: VarintArray,
+    block_entities: NbtList,
 }
 
 impl Blocks {
-    fn data(&self) -> Vec<u8> {
+    fn add_block(&mut self, block_id: &str) {
         todo!()
     }
 
-    fn block_entities(&self) -> NbtList {
-        todo!()
+    fn into_nbt(self) -> NbtCompound {
+        compound! {
+            "BlockEntities": self.block_entities,
+            "Palette": self.palette.into_nbt(),
+            "Data": self.data.into_nbt(),
+        }
     }
 
     fn to_nbt(&self) -> NbtCompound {
-        compound! {
-            "Palette": self.palette.to_nbt(),
-            "Data": self.data(),
-            "BlockEntities": self.block_entities(),
-        }
+        self.clone().into_nbt()
     }
 }
 
@@ -89,7 +89,7 @@ impl Entities {
 }
 
 #[derive(Builder)]
-struct Schematic {
+pub struct Schematic {
     dims: (u16, u16, u16),
     offset: (i32, i32, i32),
     metadata: Metadata,
