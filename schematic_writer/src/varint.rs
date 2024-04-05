@@ -1,18 +1,18 @@
-use quartz_nbt::NbtCompound;
+use quartz_nbt::{NbtTag};
 
 // https://wiki.vg/VarInt_And_VarLong
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VarintArray {
-    bytes: Vec<u8>,
+    bytes: Vec<i8>,
 }
 
 impl VarintArray {
-    fn take(self) -> Vec<u8> {
+    fn take(self) -> Vec<i8> {
         self.bytes
     }
 
-    fn bytes(&self) -> &[u8] {
+    fn bytes(&self) -> &[i8] {
         &self.bytes
     }
 
@@ -21,7 +21,7 @@ impl VarintArray {
     }
 
     fn push_byte(&mut self, byte: u8) {
-        self.bytes.push(byte)
+        self.bytes.push(i8::from_ne_bytes(byte.to_ne_bytes()))
     }
     fn push_u32(&mut self, mut value: u32) {
         const SEGMENT_BITS: u32 = 0x7f;
@@ -61,8 +61,8 @@ impl VarintArray {
         self.push_u64(u64::from_ne_bytes(value.to_ne_bytes()));
     }
 
-    pub(crate) fn to_nbt(&self) -> NbtCompound {
-        todo!()
+    pub(crate) fn into_nbt(self) -> NbtTag {
+        NbtTag::ByteArray(self.bytes)
     }
 }
 
@@ -70,12 +70,12 @@ impl VarintArray {
 mod tests {
     use super::*;
 
-    fn varlong(i: i64) -> Vec<u8> {
+    fn varlong(i: i64) -> Vec<i8> {
         let mut a = VarintArray::new();
         a.push_long(i);
         a.take()
     }
-    fn varint(i: i32) -> Vec<u8> {
+    fn varint(i: i32) -> Vec<i8> {
         let mut a = VarintArray::new();
         a.push_int(i);
         a.take()
@@ -87,13 +87,13 @@ mod tests {
         assert_eq!(varint(1), vec![0x01,]);
         assert_eq!(varint(2), vec![0x02,]);
         assert_eq!(varint(127), vec![0x7f,]);
-        assert_eq!(varint(128), vec![0x80, 0x01]);
-        assert_eq!(varint(255), vec![0xff, 0x01]);
-        assert_eq!(varint(25565), vec![0xdd, 0xc7, 0x01]);
-        assert_eq!(varint(2097151), vec![0xff, 0xff, 0x7f]);
-        assert_eq!(varint(2147483647), vec![0xff, 0xff, 0xff, 0xff, 0x07]);
-        assert_eq!(varint(-1), vec![0xff, 0xff, 0xff, 0xff, 0x0f]);
-        assert_eq!(varint(-2147483648), vec![0x80, 0x80, 0x80, 0x80, 0x08]);
+        assert_eq!(varint(128), vec![-0x80, 0x01]);
+        assert_eq!(varint(255), vec![-0x01, 0x01]);
+        assert_eq!(varint(25565), vec![-35, -57, 0x01]);
+        assert_eq!(varint(2097151), vec![-0x01, -0x01, 0x7f]);
+        assert_eq!(varint(2147483647), vec![-0x01, -0x01, -0x01, -0x01, 0x07]);
+        assert_eq!(varint(-1), vec![-0x01, -0x01, -0x01, -0x01, 0x0f]);
+        assert_eq!(varint(-2147483648), vec![-0x80, -0x80, -0x80, -0x80, 0x08]);
     }
 
     #[test]
@@ -102,12 +102,12 @@ mod tests {
         assert_eq!(varlong(1), vec![0x01]);
         assert_eq!(varlong(2), vec![0x02]);
         assert_eq!(varlong(127), vec![0x7f]);
-        assert_eq!(varlong(128), vec![0x80, 0x01]);
-        assert_eq!(varlong(255), vec![0xff, 0x01]);
-        assert_eq!(varlong(2147483647), vec![0xff, 0xff, 0xff, 0xff, 0x07]);
-        assert_eq!(varlong(9223372036854775807), vec![0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f,]);
-        assert_eq!(varlong(-1), vec![0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]);
-        assert_eq!(varlong(-2147483648), vec![0x80, 0x80, 0x80, 0x80, 0xf8, 0xff, 0xff, 0xff, 0xff, 0x01]);
-        assert_eq!(varlong(-9223372036854775808), vec![0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01]);
+        assert_eq!(varlong(128), vec![-0x80, 0x01]);
+        assert_eq!(varlong(255), vec![-0x01, 0x01]);
+        assert_eq!(varlong(2147483647), vec![-0x01, -0x01, -0x01, -0x01, 0x07]);
+        assert_eq!(varlong(9223372036854775807), vec![-0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, 0x7f,]);
+        assert_eq!(varlong(-1), vec![-0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, -0x01, 0x01]);
+        assert_eq!(varlong(-2147483648), vec![-0x80, -0x80, -0x80, -0x80, -0x08, -0x01, -0x01, -0x01, -0x01, 0x01]);
+        assert_eq!(varlong(-9223372036854775808), vec![-0x80, -0x80, -0x80, -0x80, -0x80, -0x80, -0x80, -0x80, -0x80, 0x01]);
     }
 }

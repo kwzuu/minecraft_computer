@@ -1,6 +1,7 @@
-use quartz_nbt::{compound, NbtCompound, NbtList};
+use quartz_nbt::{compound, NbtCompound, NbtList, NbtTag};
 use std::ops::Deref;
 use std::time::{SystemTime, UNIX_EPOCH};
+use quartz_nbt::NbtTag::Int;
 use varint::VarintArray;
 
 mod varint;
@@ -61,11 +62,51 @@ impl Blocks {
 }
 
 #[derive(Clone)]
-struct Palette {}
+struct Palette {
+    palette: NbtCompound,
+    next: u32,
+}
+
+fn int(tag: &NbtTag) -> Option<i32> {
+    match tag {
+        Int(i) => Some(*i),
+        _ => None,
+    }
+}
 
 impl Palette {
+    fn new() -> Palette {
+        Palette {
+            palette: Default::default(),
+            next: 0,
+        }
+    }
+
+    fn contains(&self, name: &str) -> bool {
+        self.palette.contains_key(name)
+    }
+
+    fn get_id(&self, name: &str) -> Option<u32> {
+        let x: Option<&NbtTag> = self.palette.get(name).ok();
+
+        x.and_then(int)
+            .map(|x| x as u32)
+    }
+    fn get_id_or_insert(&mut self, name: &str) -> u32 {
+        self.get_id(name).unwrap_or_else(|| {
+            self.palette.insert(name.to_string(), Int(self.next as i32));
+            let tmp = self.next;
+            self.next += 1;
+            tmp
+        })
+    }
+
+    fn into_nbt(self) -> NbtCompound {
+        self.palette
+    }
+
     fn to_nbt(&self) -> NbtCompound {
-        todo!()
+        self.palette.clone()
     }
 }
 
@@ -79,7 +120,7 @@ impl Biomes {
     fn to_nbt(&self) -> NbtCompound {
         compound! {
             "Palette": self.palette.to_nbt(),
-            "Data": self.data.to_nbt(),
+            "Data": self.data.clone().into_nbt(),
         }
     }
 }
