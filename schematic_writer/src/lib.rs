@@ -1,11 +1,15 @@
+#![feature(hash_set_entry)]
+
 use quartz_nbt::{compound, NbtCompound, NbtList};
 use std::time::{SystemTime, UNIX_EPOCH};
+use blocks::Blocks;
 use palette::Palette;
 use varint::VarintArray;
 
 mod varint;
 mod nbt_tag_extensions;
 mod palette;
+mod blocks;
 
 #[macro_use]
 extern crate derive_builder;
@@ -37,30 +41,6 @@ impl Metadata {
                 .as_millis() as i64,
             "RequiredMods": NbtList::from(self.required_mods.clone().to_vec())
         }
-    }
-}
-#[derive(Clone)]
-struct Blocks {
-    palette: Palette,
-    data: VarintArray,
-    block_entities: NbtList,
-}
-
-impl Blocks {
-    fn add_block(&mut self, block_id: &str) {
-        todo!()
-    }
-
-    fn into_nbt(self) -> NbtCompound {
-        compound! {
-            "BlockEntities": self.block_entities,
-            "Palette": self.palette.into_nbt(),
-            "Data": self.data.into_nbt(),
-        }
-    }
-
-    fn to_nbt(&self) -> NbtCompound {
-        self.clone().into_nbt()
     }
 }
 

@@ -3,7 +3,7 @@ use quartz_nbt::{NbtTag};
 // https://wiki.vg/VarInt_And_VarLong
 
 #[derive(Clone, Debug)]
-pub struct VarintArray {
+pub(crate) struct VarintArray {
     bytes: Vec<i8>,
 }
 
@@ -23,7 +23,7 @@ impl VarintArray {
     fn push_byte(&mut self, byte: u8) {
         self.bytes.push(i8::from_ne_bytes(byte.to_ne_bytes()))
     }
-    fn push_u32(&mut self, mut value: u32) {
+    pub(crate) fn push_u32(&mut self, mut value: u32) {
         const SEGMENT_BITS: u32 = 0x7f;
         const CONTINUE_BIT: u32 = 0x80;
 
