@@ -18,10 +18,6 @@ impl Palette {
         }
     }
 
-    pub fn contains(&self, name: &str) -> bool {
-        self.palette.contains_key(name)
-    }
-
     pub fn get_id(&self, name: &str) -> Option<u32> {
         self.palette.get(name)
             .ok()

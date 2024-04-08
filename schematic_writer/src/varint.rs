@@ -2,7 +2,7 @@ use quartz_nbt::{NbtTag};
 
 /// An array of variable-length integers
 /// conforms to https://wiki.vg/VarInt_And_VarLong
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct VarintArray {
     bytes: Vec<i8>,
 }

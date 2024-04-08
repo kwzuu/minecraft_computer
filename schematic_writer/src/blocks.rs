@@ -57,7 +57,7 @@ impl Blocks {
     }
 }
 
-struct BlocksBuilder {
+pub struct BlocksBuilder {
     palette: Palette,
     blocks: Vec<(Coordinates, u32)>,
     block_entities: NbtList
@@ -151,14 +151,14 @@ impl Dimensions {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
-struct Coordinates {
+pub struct Coordinates {
     pub x: usize,
     pub y: usize,
     pub z: usize,
 }
 
 impl Dimensions {
-    fn size(&self) -> usize {
+    fn volume(&self) -> usize {
         self.height * self.width * self.length
     }
 }
@@ -176,7 +176,7 @@ impl Coordinates {
         dimensions.contains(self).then(||
               self.x
             + self.z * dimensions.width
-            + self.y * dimensions.width * dimensions.height
+            + self.y * dimensions.width * dimensions.length
         )
     }
 
@@ -185,15 +185,25 @@ impl Coordinates {
     }
 }
 
+impl From<(u16, u16, u16)> for Coordinates {
+    fn from(value: (u16, u16, u16)) -> Self {
+        Self {
+            x: value.0 as usize,
+            y: value.1 as usize,
+            z: value.2 as usize,
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Eq)]
-pub struct Array3d<T> {
+struct Array3d<T> {
     dimensions: Dimensions,
     items: Box<[T]>
 }
 
 impl<T: Copy> Array3d<T> {
     fn new_with(dimensions: Dimensions, item: T) -> Self {
-        let size = dimensions.size();
+        let size = dimensions.volume();
 
         let mut v = Vec::with_capacity(size);
         for _ in 0..size {
@@ -208,24 +218,6 @@ impl<T: Copy> Array3d<T> {
 }
 
 impl<T> Array3d<T> {
-    fn from_function<F: FnMut(usize, usize, usize)>(dimensions: Dimensions, mut f: F) {
-        let size = dimensions.size();
-
-        let mut v = Vec::with_capacity(size);
-        for y in 0..dimensions.height {
-            for z in 0..dimensions.width {
-                for x in 0..dimensions.length {
-                    v.push(f(x, y, z))
-                }
-            }
-        }
-    }
-
-    pub fn get(&self, coordinates: &Coordinates) -> Option<&T> {
-        coordinates.to_linear_in(&self.dimensions)
-            .and_then(|x| self.items.get(x))
-    }
-
     pub fn set(&mut self, coordinates: &Coordinates, item: T) {
         coordinates.to_linear_in(&self.dimensions)
             .map(|x| self.items[x] = item);
@@ -233,5 +225,64 @@ impl<T> Array3d<T> {
 
     pub fn xzy_contents(&self) -> &[T] {
         &self.items
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_block_builder() {
+        let mut builder = BlocksBuilder::new();
+
+        let stone = "minecraft:stone";
+
+        builder.add_block((0, 0, 0).into(), stone);
+        builder.add_block((0, 0, 1).into(), stone);
+        builder.add_block((1, 0, 0).into(), stone);
+        builder.add_block((1, 0, 1).into(), stone);
+
+        let mut blocks = builder.build();
+
+        assert_eq!(blocks.block_entities, NbtList::new());
+
+        let stone_id = blocks.palette.get_id_or_insert(stone);
+
+        let mut target = VarintArray::new();
+
+        for _ in 0..4 {
+            target.push_u32(stone_id);
+        }
+
+        assert_eq!(target, blocks.data);
+    }
+
+    #[test]
+    fn test_coordinates() {
+        let coords: Coordinates = (1, 2, 3).into();
+
+        assert_eq!(coords.x, 1);
+        assert_eq!(coords.y, 2);
+        assert_eq!(coords.z, 3);
+
+        assert_eq!(coords.to_nbt(), NbtTag::IntArray(vec![1, 2, 3]));
+
+        let dimensions = Dimensions {
+            width: 3,
+            height: 8,
+            length: 4,
+        };
+
+        assert_eq!(coords.to_linear_in(&dimensions), Some(34));
+
+        let empty = Dimensions {
+            width: 0,
+            height: 0,
+            length: 0,
+        };
+
+        assert_eq!(coords.to_linear_in(&empty), None);
+
     }
 }
