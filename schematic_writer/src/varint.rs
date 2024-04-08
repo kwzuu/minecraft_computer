@@ -1,21 +1,24 @@
 use quartz_nbt::{NbtTag};
 
-// https://wiki.vg/VarInt_And_VarLong
-
+/// An array of variable-length integers
+/// conforms to https://wiki.vg/VarInt_And_VarLong
 #[derive(Clone, Debug)]
 pub(crate) struct VarintArray {
     bytes: Vec<i8>,
 }
 
 impl VarintArray {
+    /// take the buffer
     pub fn take(self) -> Vec<i8> {
         self.bytes
     }
 
+    /// retrieve a reference to the buffer
     pub fn bytes(&self) -> &[i8] {
         &self.bytes
     }
 
+    /// create a new array
     pub fn new() -> Self {
         Self { bytes: vec![] }
     }
@@ -53,15 +56,17 @@ impl VarintArray {
         }
     }
 
+    /// push an integer to the array
     pub fn push_int(&mut self, value: i32) {
         self.push_u32(u32::from_ne_bytes(value.to_ne_bytes()));
     }
 
+    /// push a long to the array
     pub fn push_long(&mut self, value: i64) {
         self.push_u64(u64::from_ne_bytes(value.to_ne_bytes()));
     }
 
-    pub(crate) fn into_nbt(self) -> NbtTag {
+    pub fn into_nbt(self) -> NbtTag {
         NbtTag::ByteArray(self.bytes)
     }
 }

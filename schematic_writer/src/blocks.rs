@@ -1,5 +1,5 @@
 use std::cmp::max;
-use quartz_nbt::{compound, NbtCompound, NbtList};
+use quartz_nbt::{compound, NbtCompound, NbtList, NbtTag};
 use crate::palette::Palette;
 use crate::varint::VarintArray;
 
@@ -11,17 +11,37 @@ pub struct Blocks {
 }
 
 #[derive(Clone)]
-struct BlockEntity {
+pub struct BlockEntity {
+    pos: Coordinates,
+    id: String,
+    data: Option<NbtCompound>
+}
 
+impl BlockEntity {
+    pub fn new(pos: Coordinates, id: String, data: Option<NbtCompound>) -> BlockEntity {
+        Self {
+            pos,
+            id,
+            data,
+        }
+    }
+
+    pub fn into_nbt(self) -> NbtCompound {
+        let mut nbt = NbtCompound::new();
+        nbt.insert("Pos", self.pos.to_nbt());
+        nbt.insert("Id", self.id);
+
+        if let Some(data) = self.data {
+            nbt.insert("Data", data)
+        }
+
+        nbt
+    }
 }
 
 impl Blocks {
     pub fn builder() -> BlocksBuilder {
         BlocksBuilder::new()
-    }
-
-    pub fn add_block_entity(&mut self, entity: BlockEntity) {
-        todo!()
     }
 
     pub(crate) fn into_nbt(self) -> NbtCompound {
@@ -40,6 +60,7 @@ impl Blocks {
 struct BlocksBuilder {
     palette: Palette,
     blocks: Vec<(Coordinates, u32)>,
+    block_entities: NbtList
 }
 
 impl BlocksBuilder {
@@ -47,7 +68,12 @@ impl BlocksBuilder {
         Self {
             palette: Palette::new(),
             blocks: vec![],
+            block_entities: NbtList::new(),
         }
+    }
+
+    fn add_block_entity(&mut self, block_entity: BlockEntity) {
+        self.block_entities.push(block_entity.into_nbt())
     }
 
     fn add_block(&mut self, coordinates: Coordinates, id: &str) {
@@ -152,6 +178,10 @@ impl Coordinates {
             + self.z * dimensions.width
             + self.y * dimensions.width * dimensions.height
         )
+    }
+
+    fn to_nbt(&self) -> NbtTag {
+        NbtTag::IntArray(vec![self.x as i32, self.y as i32, self.z as i32])
     }
 }
 

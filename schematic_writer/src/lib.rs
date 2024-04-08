@@ -14,7 +14,9 @@ mod blocks;
 #[macro_use]
 extern crate derive_builder;
 
+/// Trait for reinterpreting the bytes of one integer as another
 trait ReinterpretCast<T> {
+    /// reinterpret the bytes of `self` as `T`
     fn reinterpret_cast(&self) -> T;
 }
 
@@ -24,6 +26,7 @@ impl ReinterpretCast<i16> for u16 {
     }
 }
 
+/// Schematic metadata
 #[derive(Clone)]
 struct Metadata {
     name: String,
