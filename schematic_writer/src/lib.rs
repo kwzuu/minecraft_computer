@@ -2,6 +2,7 @@
 
 use quartz_nbt::{compound, NbtCompound, NbtList};
 use std::time::{SystemTime, UNIX_EPOCH};
+use quartz_nbt::NbtTag::IntArray;
 use blocks::Blocks;
 use palette::Palette;
 use varint::VarintArray;
@@ -71,29 +72,52 @@ impl Entities {
     }
 }
 
-#[derive(Builder)]
+#[derive(Clone, Builder)]
 pub struct Schematic {
-    dims: (u16, u16, u16),
-    offset: (i32, i32, i32),
+    offset: Option<(i32, i32, i32)>,
     metadata: Metadata,
     blocks: Blocks,
-    biomes: Biomes,
-    entities: Entities,
+    biomes: Option<Biomes>,
+    entities: Option<Entities>,
 }
 
 impl Schematic {
     pub fn into_nbt(self) -> NbtCompound {
-        compound! {
+        let mut schematic = compound! {
             "Version": 3i32,
             "DataVersion": 3578i32,
             "Metadata": self.metadata.into_nbt(),
-            "Width":  self.dims.0.reinterpret_cast(),
-            "Height": self.dims.1.reinterpret_cast(),
-            "Length": self.dims.2.reinterpret_cast(),
-            "Offset": [self.offset.0, self.offset.1, self.offset.2],
+            "Width":  *&self.blocks.dimensions.width as i16,
+            "Height": *&self.blocks.dimensions.height as i16,
+            "Length": *&self.blocks.dimensions.length as i16,
             "Blocks": self.blocks.into_nbt(),
-            "Biomes": self.biomes.into_nbt(),
-            "Entities": self.entities.into_nbt(),
+        };
+
+        match self.offset {
+            None => {}
+            Some((x, y, z)) => {
+                schematic.insert("Offset", IntArray(vec![x, y, z]));
+            }
         }
+
+        match self.biomes {
+            None => {}
+            Some(biomes) => {
+                schematic.insert("Biomes", biomes.into_nbt())
+            }
+        }
+
+        match self.entities {
+            None => {}
+            Some(entities) => {
+                schematic.insert("Entities", entities.into_nbt())
+            }
+        }
+
+        schematic
+    }
+
+    pub fn to_nbt(&self) -> NbtCompound {
+        self.clone().into_nbt()
     }
 }

@@ -8,6 +8,7 @@ pub struct Blocks {
     palette: Palette,
     data: VarintArray,
     block_entities: NbtList,
+    pub(crate) dimensions: Dimensions,
 }
 
 #[derive(Debug, Clone)]
@@ -117,15 +118,16 @@ impl BlocksBuilder {
             data: varints,
             palette: self.palette,
             block_entities: self.block_entities,
+            dimensions,
         }
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-struct Dimensions {
-    width: usize,
-    height: usize,
-    length: usize,
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(crate) struct Dimensions {
+    pub(crate) width: usize,
+    pub(crate) height: usize,
+    pub(crate) length: usize,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

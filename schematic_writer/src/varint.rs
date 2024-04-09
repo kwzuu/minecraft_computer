@@ -41,7 +41,7 @@ impl VarintArray {
         }
     }
 
-    fn push_u64(&mut self, mut value: u64) {
+    pub(crate) fn push_u64(&mut self, mut value: u64) {
         const SEGMENT_BITS: u64 = 0x7f;
         const CONTINUE_BIT: u64 = 0x80;
 
