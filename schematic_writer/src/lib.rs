@@ -10,7 +10,7 @@ use varint::VarintArray;
 mod varint;
 mod nbt_tag_extensions;
 mod palette;
-mod blocks;
+pub mod blocks;
 
 #[macro_use]
 extern crate derive_builder;
@@ -29,10 +29,10 @@ impl ReinterpretCast<i16> for u16 {
 
 /// Schematic metadata
 #[derive(Clone)]
-struct Metadata {
-    name: String,
-    author: String,
-    required_mods: Box<[String]>,
+pub struct Metadata {
+    pub name: String,
+    pub author: String,
+    pub required_mods: Box<[String]>,
 }
 
 impl Metadata {
@@ -74,10 +74,13 @@ impl Entities {
 
 #[derive(Clone, Builder)]
 pub struct Schematic {
-    offset: Option<(i32, i32, i32)>,
     metadata: Metadata,
     blocks: Blocks,
+    #[builder(setter(into, strip_option), default)]
+    offset: Option<(i32, i32, i32)>,
+    #[builder(setter(into, strip_option), default)]
     biomes: Option<Biomes>,
+    #[builder(setter(into, strip_option), default)]
     entities: Option<Entities>,
 }
 
@@ -114,7 +117,7 @@ impl Schematic {
             }
         }
 
-        schematic
+        compound! { "Schematic": schematic }
     }
 
     pub fn to_nbt(&self) -> NbtCompound {

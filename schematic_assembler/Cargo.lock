@@ -186,6 +186,15 @@ version = "0.1.0"
 dependencies = [
  "derive_builder",
  "quartz_nbt",
+ "schematic_writer",
+]
+
+[[package]]
+name = "schematic_writer"
+version = "0.1.0"
+dependencies = [
+ "derive_builder",
+ "quartz_nbt",
 ]
 
 [[package]]

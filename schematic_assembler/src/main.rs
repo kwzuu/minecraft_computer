@@ -1,43 +1,19 @@
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader, BufWriter};
 use std::io;
 use std::fs::File;
 use std::num::ParseIntError;
 use quartz_nbt::{NbtCompound, snbt};
+use quartz_nbt::io::{Flavor, write_nbt};
 use quartz_nbt::snbt::SnbtError;
+use schematic_writer::blocks::{BlockEntity, BlocksBuilder};
+use schematic_writer::{Metadata, Schematic, SchematicBuilder};
 use crate::LineParseError::{EarlyEnd, IntParseError, NbtParseError};
-
-#[derive(Debug)]
-struct BlockRegistry {
-    names: Vec<String>,
-    map: HashMap<String, usize>,
-}
-
-impl BlockRegistry {
-    pub fn new() -> Self {
-        Self {
-            names: vec![],
-            map: Default::default(),
-        }
-    }
-
-    pub fn get_id(&mut self, name: &str) -> usize {
-        match self.map.get(name) {
-            None => {
-                let new_id = self.names.len();
-                self.map.insert(name.to_string(), new_id);
-                self.names.push(name.to_string());
-                new_id
-            }
-            Some(x) => *x
-        }
-    }
-}
 
 #[derive(Debug)]
 struct Line {
     position: (u16, u16, u16),
-    block_id: u32,
+    block_id: String,
     nbt: Option<NbtCompound>
 }
 
@@ -55,7 +31,7 @@ impl From<SnbtError> for LineParseError {
 }
 
 impl Line {
-    fn parse(s: &str, registry: &mut BlockRegistry) -> Result<Line, LineParseError> {
+    fn parse(s: &str) -> Result<Line, LineParseError> {
         let mut split = s.splitn(5, ' ');
 
         let mut read = || split.next().ok_or(EarlyEnd);
@@ -66,9 +42,7 @@ impl Line {
             read()?.parse().map_err(IntParseError)?
         );
 
-        let block = read()?;
-        let block_id = registry.get_id(block) as u32;
-        let block_state = read();
+        let block_id = read()?;
 
         let nbt = if let Ok(nbt) = read().map(snbt::parse) {
             Some(nbt?)
@@ -78,7 +52,7 @@ impl Line {
 
         Ok(Line {
             position,
-            block_id,
+            block_id: block_id.to_string(),
             nbt
         })
     }
@@ -98,29 +72,63 @@ fn read_headers<I: Iterator<Item=String>>(lines: &mut I) -> HashMap<String, Stri
     m
 }
 
+fn make_schematic(lines: Vec<Line>) -> Schematic {
+    let mut builder = BlocksBuilder::new();
+    for line in lines {
+        let coords = line.position.into();
+        builder.add_block(coords, &line.block_id);
+        if let Some(nbt) = line.nbt {
+            builder.add_block_entity(BlockEntity::new(coords, line.block_id, Some(nbt)))
+        }
+    }
+    let blocks = builder.build();
+
+    let metadata = Metadata {
+        name: "Schematic".to_string(),
+        author: "schematic_assembler".to_string(),
+        required_mods: Box::new([]),
+    };
+
+    SchematicBuilder::default()
+        .blocks(blocks)
+        .metadata(metadata)
+        .build()
+        .unwrap()
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
-    let filename: String;
+    let in_filename: String;
+    let out_filename: String;
 
-    match args.get(1) {
-        Some(name) => {
-            filename = name.clone();
+    match &args[1..] {
+        [in_name, out_name] => {
+            in_filename = in_name.clone();
+            out_filename = out_name.clone();
         },
-        _ => panic!("please specify a filename!")
+        _ => panic!("usage: schematic_writer <INFILE> <OUTFILE>")
     }
 
-    let file = File::open(filename)?;
+    let file = File::open(in_filename)?;
 
-    let mut registry = BlockRegistry::new();
     let mut lines = vec![];
     for l in BufReader::new(file).lines() {
         let line = l?;
-        let parsed = Line::parse(&line, &mut registry);
-        lines.push(parsed);
+        let parsed = Line::parse(&line);
+        lines.push(parsed.unwrap());
     }
 
-    dbg!(lines);
+    let schematic = make_schematic(lines);
+    let nbt = schematic.into_nbt();
+    let mut output= File::create(out_filename)?;
+
+    write_nbt(
+        &mut BufWriter::new(output),
+        Some(""),
+        &nbt,
+        Flavor::GzCompressed
+    ).unwrap();
 
     Ok(())
 }
