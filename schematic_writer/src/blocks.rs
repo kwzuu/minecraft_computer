@@ -3,14 +3,14 @@ use quartz_nbt::{compound, NbtCompound, NbtList, NbtTag};
 use crate::palette::Palette;
 use crate::varint::VarintArray;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Blocks {
     palette: Palette,
     data: VarintArray,
     block_entities: NbtList,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BlockEntity {
     pos: Coordinates,
     id: String,
@@ -57,6 +57,7 @@ impl Blocks {
     }
 }
 
+#[derive(Debug)]
 pub struct BlocksBuilder {
     palette: Palette,
     blocks: Vec<(Coordinates, u32)>,
@@ -64,7 +65,7 @@ pub struct BlocksBuilder {
 }
 
 impl BlocksBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             palette: Palette::new(),
             blocks: vec![],
@@ -72,16 +73,16 @@ impl BlocksBuilder {
         }
     }
 
-    fn add_block_entity(&mut self, block_entity: BlockEntity) {
-        self.block_entities.push(block_entity.into_nbt())
+    pub fn add_block_entity(&mut self, block_entity: BlockEntity) {
+        self.block_entities.push(block_entity.into_nbt());
     }
 
-    fn add_block(&mut self, coordinates: Coordinates, id: &str) {
+    pub fn add_block(&mut self, coordinates: Coordinates, id: &str) {
         let id = self.palette.get_id_or_insert(id);
         self.blocks.push((coordinates, id));
     }
 
-    fn build(mut self) -> Blocks {
+    pub fn build(mut self) -> Blocks {
         let mut max_x = 0;
         let mut max_y = 0;
         let mut max_z = 0;
@@ -115,7 +116,7 @@ impl BlocksBuilder {
         Blocks {
             data: varints,
             palette: self.palette,
-            block_entities: Default::default(),
+            block_entities: self.block_entities,
         }
     }
 }
@@ -127,30 +128,7 @@ struct Dimensions {
     length: usize,
 }
 
-impl Dimensions {
-    fn new(width: usize, height: usize, length: usize) -> Self {
-        Self {
-            width,
-            height,
-            length,
-        }
-    }
-
-    pub fn width(&self) -> usize {
-        self.width
-    }
-
-    pub fn height(&self) -> usize {
-        self.height
-    }
-
-    pub fn length(&self) -> usize {
-        self.length
-    }
-
-}
-
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Coordinates {
     pub x: usize,
     pub y: usize,
@@ -161,9 +139,7 @@ impl Dimensions {
     fn volume(&self) -> usize {
         self.height * self.width * self.length
     }
-}
 
-impl Dimensions {
     fn contains(&self, coordinates: &Coordinates) -> bool {
         coordinates.x < self.width
             && coordinates.y < self.height
@@ -230,6 +206,7 @@ impl<T> Array3d<T> {
 
 #[cfg(test)]
 mod tests {
+    use quartz_nbt::NbtTag::IntArray;
     use super::*;
 
     #[test]
@@ -237,25 +214,40 @@ mod tests {
         let mut builder = BlocksBuilder::new();
 
         let stone = "minecraft:stone";
+        let chest = "minecraft:chest";
 
         builder.add_block((0, 0, 0).into(), stone);
         builder.add_block((0, 0, 1).into(), stone);
         builder.add_block((1, 0, 0).into(), stone);
-        builder.add_block((1, 0, 1).into(), stone);
+        builder.add_block((1, 0, 1).into(), chest);
+        builder.add_block_entity(BlockEntity::new(
+            (1, 0, 1).into(),
+            chest.to_string(),
+            None
+        ));
 
         let mut blocks = builder.build();
 
-        assert_eq!(blocks.block_entities, NbtList::new());
-
         let stone_id = blocks.palette.get_id_or_insert(stone);
+        let chest_id = blocks.palette.get_id_or_insert(chest);
 
-        let mut target = VarintArray::new();
+        let mut data_target = VarintArray::new();
 
-        for _ in 0..4 {
-            target.push_u32(stone_id);
-        }
+        data_target.push_u32(stone_id);
+        data_target.push_u32(stone_id);
+        data_target.push_u32(stone_id);
+        data_target.push_u32(chest_id);
 
-        assert_eq!(target, blocks.data);
+        assert_eq!(&data_target, &blocks.data);
+
+        let mut block_entities_target = NbtList::new();
+
+        block_entities_target.push(compound! {
+            "Pos": IntArray(vec![1, 0, 1]),
+            "Id": "minecraft:chest"
+        });
+
+        assert_eq!(&block_entities_target, &blocks.block_entities);
     }
 
     #[test]
@@ -266,7 +258,7 @@ mod tests {
         assert_eq!(coords.y, 2);
         assert_eq!(coords.z, 3);
 
-        assert_eq!(coords.to_nbt(), NbtTag::IntArray(vec![1, 2, 3]));
+        assert_eq!(coords.to_nbt(), IntArray(vec![1, 2, 3]));
 
         let dimensions = Dimensions {
             width: 3,

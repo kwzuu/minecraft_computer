@@ -35,14 +35,14 @@ struct Metadata {
 }
 
 impl Metadata {
-    fn to_nbt(&self) -> NbtCompound {
+    fn into_nbt(self) -> NbtCompound {
         compound! {
-            "Name": &self.name,
-            "Author": &self.author,
+            "Name": self.name,
+            "Author": self.author,
             "Date": SystemTime::now()
                 .duration_since(UNIX_EPOCH).unwrap()
                 .as_millis() as i64,
-            "RequiredMods": NbtList::from(self.required_mods.clone().to_vec())
+            "RequiredMods": NbtList::from(self.required_mods.to_vec())
         }
     }
 }
@@ -54,9 +54,9 @@ struct Biomes {
 }
 
 impl Biomes {
-    fn to_nbt(&self) -> NbtCompound {
+    fn into_nbt(self) -> NbtCompound {
         compound! {
-            "Palette": self.palette.to_nbt(),
+            "Palette": self.palette.into_nbt(),
             "Data": self.data.clone().into_nbt(),
         }
     }
@@ -66,7 +66,7 @@ impl Biomes {
 struct Entities {}
 
 impl Entities {
-    fn to_nbt(&self) -> NbtCompound {
+    fn into_nbt(self) -> NbtCompound {
         todo!()
     }
 }
@@ -82,18 +82,18 @@ pub struct Schematic {
 }
 
 impl Schematic {
-    pub fn to_nbt(&self) -> NbtCompound {
+    pub fn into_nbt(self) -> NbtCompound {
         compound! {
             "Version": 3i32,
             "DataVersion": 3578i32,
-            "Metadata": self.metadata.to_nbt(),
+            "Metadata": self.metadata.into_nbt(),
             "Width":  self.dims.0.reinterpret_cast(),
             "Height": self.dims.1.reinterpret_cast(),
             "Length": self.dims.2.reinterpret_cast(),
             "Offset": [self.offset.0, self.offset.1, self.offset.2],
-            "Blocks": self.blocks.to_nbt(),
-            "Biomes": self.biomes.to_nbt(),
-            "Entities": self.entities.to_nbt(),
+            "Blocks": self.blocks.into_nbt(),
+            "Biomes": self.biomes.into_nbt(),
+            "Entities": self.entities.into_nbt(),
         }
     }
 }

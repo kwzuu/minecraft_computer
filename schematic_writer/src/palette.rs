@@ -4,7 +4,7 @@ use crate::nbt_tag_extensions::NbtTagExtensions;
 
 /// A representation of the Palette object from the Sponge schematic format
 /// Maps string keys to integer values, always returning the same value for the same key
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Palette {
     palette: NbtCompound,
     next: u32,
