@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 derive_builder = "0.20.0"
-quartz_nbt = "0.2.9"
+quartz_nbt = { path = "../quartz_nbt" }

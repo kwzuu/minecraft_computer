@@ -1,5 +1,5 @@
 use std::cmp::max;
-use quartz_nbt::{compound, NbtCompound, NbtList, NbtTag};
+use quartz_nbt::{compound, NbtCompound, NbtList, NbtTag, NbtTagKind};
 use crate::palette::Palette;
 use crate::varint::VarintArray;
 
@@ -46,11 +46,19 @@ impl Blocks {
     }
 
     pub(crate) fn into_nbt(self) -> NbtCompound {
-        compound! {
-            "BlockEntities": self.block_entities,
+        let mut nbt = compound! {
+
             "Palette": self.palette.into_nbt(),
             "Data": self.data.into_nbt(),
+        };
+
+        if self.block_entities.len() != 0 {
+            nbt.insert("BlockEntities", self.block_entities)
+        } else {
+            nbt.insert("BlockEntities", NbtList::new_with_tag_kind_if_empty(NbtTagKind::Compound))
         }
+
+        nbt
     }
 
     pub(crate) fn to_nbt(&self) -> NbtCompound {
