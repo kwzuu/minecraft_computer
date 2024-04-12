@@ -12,11 +12,11 @@ else
   dir="schematic_assembly"
 fi
 
-if ! [ -h schematics ]; then
+if ! [ -h ../schematics ]; then
   echo 'You should symlink `schematics'\'' to where you want to drop the schematics for testing.' >&2
-  if ! [ -d schematics ]; then
+  if ! [ -d ../schematics ]; then
     echo 'Creating it as a directory as fallback.' >&2
-    mkdir schematics
+    mkdir ../schematics
   fi
 fi
 
@@ -26,5 +26,5 @@ cargo build --release
 find "$dir" -type f | while read -r file; do
   base_name="$(basename "$file")"
   echo "building $base_name"
-  target/release/schematic_assembler "$file" "schematics/${base_name%.*}.schematic"
+  target/release/schematic_assembler "$file" "../schematics/${base_name%.*}.schematic"
 done
