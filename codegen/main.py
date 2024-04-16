@@ -12,6 +12,9 @@ class Coordinates:
     def __add__(self, other):
         return Coordinates(self.x + other.x, self.y + other.y, self.z + other.z)
 
+    def __format__(self, format_spec) -> str:
+        return f"{self.x} {self.y} {self.z}"
+
 
 Coordinates.EAST = Coordinates(1, 0, 0)
 Coordinates.WEST = Coordinates(-1, 0, 0)
@@ -46,13 +49,6 @@ def chain(
         command_block(file, pos, command, kind=f"minecraft:chain_command_block[facing={facing}]")
 
 
-def computer(file):
-    chain(file, Coordinates(0, 0, 1), [
-        "say hello world",
-        "say meow"
-    ])
-
-
 def run_schematic_assembler(src, dst):
     process = subprocess.Popen(["../schematic_assembler/target/release/schematic_assembler", src, dst])
 
@@ -60,13 +56,6 @@ def run_schematic_assembler(src, dst):
 def assemble_schematic(function, name: str):
     Path("generated").mkdir(exist_ok=True)
     with open(f"generated/{name}.blk", "w") as file:
-        computer(file)
+        function(file)
         run_schematic_assembler(f"generated/{name}.blk", f"../schematics/{name}.schematic")
 
-
-def main():
-    assemble_schematic(computer, "computer")
-
-
-if __name__ == "__main__":
-    main()
