@@ -1,1 +1,4 @@
-# minecraft_computer
+A computer made of command blocks!
+
+Project components:
+- 
