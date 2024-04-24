@@ -61,7 +61,7 @@
 
 ### Instruction formats
 - 2 bit prefix, 2 bit kind, 8 bit immediate
-	- `10kkii iiiiii`, b?
+	- `10kkii iiiiii`
 	- used for constant building
 	- kinds:
 		- set
