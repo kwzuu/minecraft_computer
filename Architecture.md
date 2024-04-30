@@ -1,6 +1,6 @@
 ### Word Size
 - 12 bit data, instruction, and address word size
-- 32 bit 
+- 32 bit arithmetic
 - Addresses will be physical for ease of implementation
 
 ### Memory layout
@@ -10,7 +10,7 @@
 
 ### Arithmetic and Registers
 - Arithmetic will be done with signed 32 bit integers, as is supported by the Minecraft scoreboard
-- There will be 2 total 12-bit pointer registers, with special behaviour
+- There will be 3 total 12-bit pointer registers, with special behaviour
 	- stack pointer
 	- instruction pointer
 	- base pointer
@@ -57,7 +57,6 @@
 - Supported arithmetic instructions will be:
 	- The ones included in the scoreboard command (=, +=, -=, \*=, /=, %=, ><, <, >)
 	- Extras for shifting values to store in memory (>>>=12, <<<=12)
-	- Memory address calculation (a + b * (1|2|4|8)) ?
 
 ### Instruction formats
 - 2 bit prefix, 2 bit kind, 8 bit immediate
