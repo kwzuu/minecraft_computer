@@ -1,7 +1,7 @@
 from typing import Optional, Callable
 
 from computer.codegen.command import Command
-from computer.output import chain
+from computer.codegen.output import chain
 from computer.codegen.coordinates import Coordinates
 
 CHAIN_CONTEXT_STACK = []

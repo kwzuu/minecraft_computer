@@ -36,7 +36,7 @@ def run_schematic_assembler(src, dst):
 
 
 def assemble_schematic(function, name: str):
-    Path("../generated").mkdir(exist_ok=True)
+    Path("generated").mkdir(exist_ok=True)
     with open(f"generated/{name}.blk", "w") as file:
         function(file)
         run_schematic_assembler(f"generated/{name}.blk", f"../schematics/{name}.schematic")

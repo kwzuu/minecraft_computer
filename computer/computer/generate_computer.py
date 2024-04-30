@@ -8,7 +8,7 @@ from computer.codegen.coordinates import Coordinates
 from computer.computer import registers
 from computer.computer.clone import initialize_indirection, execute_arbitrary_code
 from computer.computer.memory import initialize_memory, memory_load
-from computer.output import assemble_schematic
+from computer.codegen.output import assemble_schematic
 
 
 def initialize_computer():
@@ -99,5 +99,5 @@ def computer(file):
     const_instruction_group.write_out(file, CONST_GROUP_POS)
 
 
-if __name__ == "__main__":
+def generate_computer():
     assemble_schematic(computer, "computer")
