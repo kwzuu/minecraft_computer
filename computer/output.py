@@ -1,6 +1,7 @@
 import subprocess
 from pathlib import Path
 
+from computer.codegen import coordinates
 from computer.codegen.command import Command
 from computer.codegen.coordinates import Coordinates
 
@@ -17,7 +18,7 @@ def chain(
         file,
         pos: Coordinates,
         commands: list[Command],
-        grow=Coordinates.EAST,
+        grow=coordinates.EAST,
         start_block="minecraft:command_block",
         facing="east"
 ):
@@ -31,11 +32,11 @@ def chain(
 
 
 def run_schematic_assembler(src, dst):
-    process = subprocess.Popen(["../schematic_assembler/target/release/schematic_assembler", src, dst])
+    subprocess.Popen(["../schematic_assembler/target/release/schematic_assembler", src, dst])
 
 
 def assemble_schematic(function, name: str):
-    Path("codegen/generated").mkdir(exist_ok=True)
+    Path("../generated").mkdir(exist_ok=True)
     with open(f"generated/{name}.blk", "w") as file:
         function(file)
         run_schematic_assembler(f"generated/{name}.blk", f"../schematics/{name}.schematic")

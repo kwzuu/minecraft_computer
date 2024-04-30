@@ -1,3 +1,5 @@
 .idea
 /schematics
 .obsidian/workspace.json
+/generated
+__pycache__
