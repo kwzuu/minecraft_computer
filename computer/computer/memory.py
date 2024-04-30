@@ -10,18 +10,19 @@ from computer.codegen.vector_variable import VectorVariable
 
 MEM_BASE = Coordinates(0, 128, 0)
 MEM_SIZE = Coordinates(16, 16, 16)
-MEM_END = MEM_BASE + MEM_SIZE
+MEM_END = MEM_BASE + MEM_SIZE - Coordinates(1, 1, 1)
 MEMORY_GETTER = Entity("minecraft:armor_stand")
 
 
 def initialize_memory():
+    command(f"fill {MEM_BASE} {MEM_END} air")
     command(
         f"fill {MEM_BASE} {MEM_END} minecraft:barrel"
         '{Items:['
         '{Slot:0b,id:"minecraft:stone",Count:1b},'
         '{Slot:1b,id:"minecraft:stone",Count:1b}'
         ']}')
-    MEMORY_GETTER.create()
+    MEMORY_GETTER.create_if_not_exists()
 
 
 def reset_memory():
@@ -34,13 +35,15 @@ def move_getter_to_index(index: Variable):
     mem_offset = VectorVariable(
         "mem_offset",
         index.bitslice(0, 4),
-        index.bitslice(4, 4),
-        index.bitslice(8, 4, last=True)
+        index.bitslice(8, 4, last=True),
+        index.bitslice(4, 4)
     )
 
     mem_index += mem_offset
 
     MEMORY_GETTER.set_pos(mem_index)
+    mem_index.delete()
+    mem_offset.delete()
 
 
 def memory_load(index: Variable, dest: Variable):

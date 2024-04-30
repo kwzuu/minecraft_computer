@@ -4,7 +4,7 @@ from computer.codegen.command import Command
 from computer.codegen.output import chain
 from computer.codegen.coordinates import Coordinates
 
-CHAIN_CONTEXT_STACK = []
+CHAIN_CONTEXT_STACK: list["ChainContext"] = []
 
 
 class ChainContext:
@@ -12,10 +12,10 @@ class ChainContext:
 
     def __init__(self):
         self.contents = []
-        CHAIN_CONTEXT_STACK.append(self)
 
     def __enter__(self):
-        pass
+        CHAIN_CONTEXT_STACK.append(self)
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         CHAIN_CONTEXT_STACK.pop()
@@ -27,10 +27,12 @@ class ChainContext:
         self.contents.append(the_command)
 
 
-INIT_CONTEXT: Optional[ChainContext] = None
+INIT_CONTEXT: Optional[ChainContext] = ChainContext()
 
 
-def command(cmd: str):
+def command(cmd: Command | str):
+    if isinstance(cmd, str):
+        cmd = Command(cmd)
     CHAIN_CONTEXT_STACK[-1].add(cmd)
 
 
@@ -49,6 +51,9 @@ class ChainGroup:
         self.chain_contexts.append(chain_context)
         return chain_context
 
+    def add(self, ctx: ChainContext):
+        self.chain_contexts.append(ctx)
+
     def write_out(self, file, base: Coordinates):
         for index, chain_context in enumerate(self.chain_contexts):
             chain_context.write(file, base + Coordinates(0, 0, index))
@@ -58,7 +63,7 @@ def capture[T]() -> Callable[[T], list[Command]]:
     ctx = ChainContext()
     ctx.__enter__()
 
-    def inner(x: T) -> list[Command]:
+    def inner(_: T) -> list[Command]:
         ctx.__exit__(None, None, None)
         return ctx.contents
 

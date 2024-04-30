@@ -1,6 +1,7 @@
 from computer.codegen.chain_context import command
+from computer.codegen.command import Command
 from computer.codegen.coordinates import Coordinates
-from computer.codegen.execute import Execute, StoreLocation
+from computer.codegen.execute import Execute, StoreLocation, Condition
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 
@@ -14,13 +15,24 @@ def new_tag() -> str:
     return name
 
 
-class Entity(StoreLocation):
+class Entity(StoreLocation, Condition):
     def __init__(self, kind: str):
         self.kind = kind
         self.uid = new_tag()
+        self.summon = f"summon {self.kind} ~ ~ ~" + " {Tags:[" + repr(self.uid) + "]}"
+
+    def condition(self, *args) -> str:
+        return f"entity {self.selector()}"
 
     def create(self):
-        command(f"summon {self.kind}" + " {Tags:[" + repr(self.uid) + "]}")
+        command(self.summon)
+
+    def create_if_not_exists(self):
+        (
+            Execute()
+            .unless_condition(self)
+            .run(Command(self.summon))
+        )
 
     def destroy(self):
         command(f"kill {self.selector()}")
@@ -39,15 +51,19 @@ class Entity(StoreLocation):
                 .store_result(self, path, mc_type, scale)
                 .run(value.get())
             )
+        else:
+            raise ValueError(f"{value}")
 
     def set_pos(self, coords: VectorVariable | Coordinates):
         match coords:
-            case VectorVariable(v):
-                self.set_nbt("Pos[0]", v.x, "double")
-                self.set_nbt("Pos[1]", v.y, "double")
-                self.set_nbt("Pos[2]", v.z, "double")
-            case Coordinates(c):
+            case VectorVariable(x, y, z):
+                self.set_nbt("Pos[0]", x, "double")
+                self.set_nbt("Pos[1]", y, "double")
+                self.set_nbt("Pos[2]", z, "double")
+            case Coordinates() as c:
                 command(f"tp {c.double()}")
+            case _:
+                raise ValueError(f"{coords}")
 
     def store_location(self, *args) -> str:
         match args:

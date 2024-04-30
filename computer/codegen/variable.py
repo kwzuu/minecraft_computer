@@ -3,9 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from computer.codegen.chain_context import command, capture
+from computer.codegen.chain_context import command, capture, init_command, INIT_CONTEXT
 from computer.codegen.command import Command
-from computer.codegen.constant import constant
 from computer.codegen.execute import StoreLocation, Condition
 
 registered_names = set()
@@ -56,7 +55,10 @@ class VariableMatches(Condition):
     int_range: IntRange | int
 
     def condition(self, *args) -> str:
-        return f"score {self.variable} matches {self.int_range}"
+        return f"score {self.variable.name} vars matches {self.int_range}"
+
+
+registered_constants = {}
 
 
 class Variable(StoreLocation):
@@ -74,10 +76,19 @@ class Variable(StoreLocation):
     def initialize(self, val: int):
         command(f"scoreboard players set {self.name} vars {val}")
 
+    @staticmethod
+    def constant(val: int) -> Variable:
+        if val not in registered_constants:
+            with INIT_CONTEXT:
+                var = Variable(str(val), val)
+            registered_constants[val] = var
+            return var
+        return registered_constants[val]
+
     def operation(self, op, src: Variable | int, inplace=True):
         if inplace:
             if isinstance(src, int):
-                constant(src)
+                Variable.constant(src)
                 src_name = str(src)
             else:
                 src_name = src.name
@@ -105,6 +116,7 @@ class Variable(StoreLocation):
         if isinstance(other, Variable):
             return self.operation("+=", other)
         command(f"scoreboard players add {self.name} vars {other}")
+        return self
 
     def __sub__(self, other):
         if isinstance(other, Variable):
@@ -117,6 +129,7 @@ class Variable(StoreLocation):
         if isinstance(other, Variable):
             return self.operation("-=", other)
         command(f"scoreboard players remove {self.name} vars {other}")
+        return self
 
     def __mul__(self, other):
         return self.operation("*=", other, inplace=False)
@@ -124,10 +137,10 @@ class Variable(StoreLocation):
     def __imul__(self, other):
         return self.operation("*=", other)
 
-    def __floordiv__(self, other):
+    def __truediv__(self, other):
         return self.operation("/=", other, inplace=False)
 
-    def __ifloordiv__(self, other):
+    def __itruediv__(self, other):
         return self.operation("/=", other)
 
     def __mod__(self, other):
@@ -184,6 +197,8 @@ class Variable(StoreLocation):
             dst /= (1 << skip)
         if not last:
             dst %= (1 << length)
+
+        return dst
 
     def sign_extend(self, width: int):
         n = 1 << (width - 1)

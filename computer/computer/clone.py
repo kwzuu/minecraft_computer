@@ -12,7 +12,7 @@ INDIRECT = Entity("minecraft:armor_stand")
 
 
 def initialize_indirection():
-    INDIRECT.create()
+    INDIRECT.create_if_not_exists()
 
 
 def smart_clone(

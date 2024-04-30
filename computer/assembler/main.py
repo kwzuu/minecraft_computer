@@ -5,6 +5,7 @@ from computer.assembler import listings
 
 def main():
     if len(argv) != 2:
+        print(argv)
         print("please provide a file!")
         exit()
 

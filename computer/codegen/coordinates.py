@@ -10,6 +10,9 @@ class Coordinates:
     def __add__(self, other):
         return Coordinates(self.x + other.x, self.y + other.y, self.z + other.z)
 
+    def __sub__(self, other):
+        return Coordinates(self.x - other.x, self.y - other.y, self.z - other.z)
+
     def __format__(self, format_spec) -> str:
         return f"{self.x} {self.y} {self.z}"
 
@@ -31,7 +34,11 @@ def parse_arg(arg: str | int) -> tuple[int, bool]:
     if len(arg) == 0:
         raise ValueError
     if arg[0] == "~":
-        return int(arg[1:]), True
+        i = arg[1:]
+        if len(i):
+            return int(arg[1:]), True
+        else:
+            return 0, True
     else:
         return int(arg), False
 

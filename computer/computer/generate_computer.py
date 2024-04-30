@@ -1,7 +1,7 @@
 #!/bin/python3.12
 from computer.codegen import chain_context
-from computer.codegen.chain_context import ChainGroup, ChainContext
-from computer.codegen.constant import constant
+from computer.codegen.chain_context import ChainGroup, ChainContext, INIT_CONTEXT
+from computer.codegen.execute import Execute, run_if
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 from computer.codegen.coordinates import Coordinates
@@ -9,6 +9,7 @@ from computer.computer import registers
 from computer.computer.clone import initialize_indirection, execute_arbitrary_code
 from computer.computer.memory import initialize_memory, memory_load
 from computer.codegen.output import assemble_schematic
+from computer.computer.registers import OPCODE, JUMPED
 
 
 def initialize_computer():
@@ -24,37 +25,43 @@ CARD_GROUP_POS = Coordinates(0, 4, 0)
 
 
 def primary_chain():
-    from registers import INSTRUCTION_POINTER, OPCODE
+    from computer.computer.registers import INSTRUCTION_POINTER
 
     memory_load(INSTRUCTION_POINTER, OPCODE)
 
-    secondary_opcode = OPCODE.clone()
+    secondary_opcode = Variable("secondary_opcode")
+    secondary_opcode.set(OPCODE)
 
-    high_bits: Variable = OPCODE.bitslice(10, 2, True)
+    high_bits = OPCODE.bitslice(10, 2, True)
     group_y = high_bits + 1
 
-    with ChainContext() as do_arithmetic:
+    with run_if(high_bits == 0):  # arithmetic
         secondary_opcode.bitslice(6, 4)
-    with ChainContext() as do_jump:
-        # TODO: decide on format for jump instructions
+    with run_if(high_bits == 1):  # jump
         pass
-    with ChainContext() as do_const:
+    with run_if(high_bits == 2):  # const.asm
         secondary_opcode.bitslice(8, 2)
-    with ChainContext() as do_card:
+    with run_if(high_bits == 3):  # card
         secondary_opcode.bitslice(6, 4)
-    high_bits.equals(0).if_true(do_arithmetic.contents)
-    high_bits.equals(1).if_true(do_jump.contents)
-    high_bits.equals(2).if_true(do_const.contents)
-    high_bits.equals(3).if_true(do_card.contents)
+
+    # high_bits.equals(0).if_true(do_arithmetic.contents)
+    # high_bits.equals(1).if_true(do_jump.contents)
+    # high_bits.equals(2).if_true(do_const.contents)
+    # high_bits.equals(3).if_true(do_card.contents)
 
     position = VectorVariable(
         "position",
-        constant(0),
+        Variable.constant(0),
         group_y,
         secondary_opcode,
     )
 
     execute_arbitrary_code(position, 32)
+
+    with run_if(JUMPED == 0):
+        INSTRUCTION_POINTER += 1
+    with run_if(JUMPED == 1):
+        JUMPED.set(0)
 
 
 def constant_instructions() -> ChainGroup:
@@ -84,9 +91,9 @@ def constant_instructions() -> ChainGroup:
 def computer(file):
     main_group = ChainGroup()
 
-    init_context = main_group.new()
-    chain_context.INIT_CONTEXT = init_context
-    with init_context:
+    main_group.add(INIT_CONTEXT)
+
+    with INIT_CONTEXT:
         initialize_computer()
 
     primary_context = main_group.new()

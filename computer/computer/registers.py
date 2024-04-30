@@ -14,6 +14,7 @@ with INIT_CONTEXT:
     STACK_POINTER = Variable("sp")
     BASE_POINTER = Variable("bp")
     OPCODE = Variable("opcode")
+    JUMPED = Variable("jumped")
 
     # source and destination for micro-ops
     SRC = Variable("src")
@@ -50,6 +51,7 @@ def reset_registers():
     CONSTANT_REGISTER.set(0)
     INSTRUCTION_POINTER.set(0)
     OPCODE.set(0)
+    JUMPED.set(0)
     SRC.set(0)
     DST.set(0)
     STACK_POINTER.set(4095)
