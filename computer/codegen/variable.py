@@ -99,7 +99,7 @@ class Variable(StoreLocation):
             var.operation(op, src)
             return var
 
-    def set(self, other: Variable | int):
+    def set(self, other: Variable | int) -> None:
         if isinstance(other, Variable):
             self.operation("=", other)
         else:
@@ -148,6 +148,12 @@ class Variable(StoreLocation):
 
     def __imod__(self, other):
         return self.operation("%=", other)
+
+    def min(self, other, inplace=False):
+        return self.operation("<", other, inplace=inplace)
+
+    def max(self, other, inplace=False):
+        return self.operation(">", other, inplace=inplace)
 
     def __lt__(self, other) -> Condition:
         if isinstance(other, Variable):

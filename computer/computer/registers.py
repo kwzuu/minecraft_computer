@@ -4,7 +4,7 @@ from computer.codegen.coordinates import Coordinates
 from computer.codegen.entity import Entity
 from computer.codegen.execute import Execute
 from computer.codegen.variable import Variable
-from computer.computer.clone import execute_arbitrary_code, TEMP_BUF_BASE
+from computer.computer.clone import TEMP_BUF_BASE
 
 REGISTER_BANK_POS = Coordinates(0, 5, 0)
 
@@ -20,6 +20,7 @@ with INIT_CONTEXT:
     SRC = Variable("src")
     DST = Variable("dst")
 
+    # general-purpose registers
     A0 = Variable("a0")
     A1 = Variable("a1")
     A2 = Variable("a2")
@@ -29,6 +30,7 @@ with INIT_CONTEXT:
     S1 = Variable("s1")
     S2 = Variable("s2")
 
+    # scratch registers
     X0 = Variable("x0")
     X1 = Variable("x1")
     X2 = Variable("x2")
@@ -37,6 +39,15 @@ with INIT_CONTEXT:
     Y1 = Variable("y1")
     Y2 = Variable("y2")
     Y3 = Variable("y3")
+
+    # comparison flags
+    LF = Variable("LF")
+    LE = Variable("LE")
+    EQ = Variable("EQ")
+    GE = Variable("GE")
+    GT = Variable("GT")
+    NE = Variable("NE")
+
 
 GP_REGISTERS = [A0, A1, A2, T0, T1, S0, S1, S2]
 SCRATCH_REGISTERS = [X0, X1, X2, X3, Y0, Y1, Y2, Y3]
@@ -63,7 +74,14 @@ def reset_registers():
 REGISTER_FETCHER = Entity("minecraft:armor_stand")
 
 
-def gpr_op(kind: int, reg: Variable):
+def register_op(kind: int, reg: Variable):
+    """
+    generates an operation to load or store a register
+    for internal use
+    :param kind: the kind of operation to perform
+    :param reg: the register to load from or store into
+    :return:
+    """
     if not 0 <= kind < 8:
         raise ValueError
     # x: reg
@@ -82,44 +100,53 @@ def gpr_op(kind: int, reg: Variable):
 
 def load_gpr(reg: Variable, src: Variable):
     SRC.set(src)
-    gpr_op(0, reg)
+    register_op(0, reg)
 
 
 def store_gpr(reg: Variable, dst: Variable):
-    gpr_op(1, reg)
+    register_op(1, reg)
     dst.set(DST)
 
 
 def load_scratch(reg: Variable, src: Variable):
     SRC.set(src)
-    gpr_op(2, reg)
+    register_op(2, reg)
 
 
 def store_scratch(reg: Variable, dst: Variable):
-    gpr_op(3, reg)
+    register_op(3, reg)
     dst.set(DST)
 
 
-def generate_register_load(var: Variable, registers: list[Variable]):
+def generate_register_loads(var: Variable, registers: list[Variable]) -> None:
+    """
+    generates a command block to load from each of the registers provided
+    :param var: the variable to store into
+    :param registers: the list of registers to generate loads for
+    """
     for r in registers:
         var.set(r)
 
 
-def generate_register_store(var: Variable, registers: list[Variable]):
+def generate_register_stores(var: Variable, registers: list[Variable]) -> None:
+    """
+    generates a command block to store into each of the registers provided
+    :param var: the variable to load from
+    :param registers: the list of registers to generate stores for
+    """
     for r in registers:
         r.set(var)
 
 
 def register_group() -> ChainGroup:
-    # TODO: make group use chain command blocks only
     group = ChainGroup()
-    with group.new():
-        generate_register_load(SRC, GP_REGISTERS)
-    with group.new():
-        generate_register_store(DST, GP_REGISTERS)
-    with group.new():
-        generate_register_load(SRC, SCRATCH_REGISTERS)
-    with group.new():
-        generate_register_store(DST, SCRATCH_REGISTERS)
+    with group.new(only_chain=True):
+        generate_register_loads(SRC, GP_REGISTERS)
+    with group.new(only_chain=True):
+        generate_register_stores(DST, GP_REGISTERS)
+    with group.new(only_chain=True):
+        generate_register_loads(SRC, SCRATCH_REGISTERS)
+    with group.new(only_chain=True):
+        generate_register_stores(DST, SCRATCH_REGISTERS)
 
     return group

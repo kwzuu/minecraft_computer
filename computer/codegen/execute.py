@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Optional
 
 from computer.codegen.chain_context import command, ChainContext
 from computer.codegen.command import Command
@@ -64,7 +64,7 @@ class Execute:
 
     def run(self, *args):
         match args:
-            case Command(cmd),:
+            case Command(cmd), :
                 self.parts.append(f"run {cmd}")
                 command("execute " + " ".join(self.parts))
             case ():
@@ -89,9 +89,23 @@ class Run:
         self.execute.run_all(self.ctx.contents)
 
 
+last_cond: Optional[Condition] = None
+last_negated: Optional[Condition] = None
+
+
 def run_if(condition: Condition) -> Run:
+    global last_negated, last_cond
+    last_negated = False
+    last_cond = condition
     return Execute().if_condition(condition).run()
 
 
+def run_else() -> Run:
+    return (run_unless if last_negated else run_if)(last_cond)
+
+
 def run_unless(condition: Condition) -> Run:
+    global last_negated, last_cond
+    last_negated = True
+    last_cond = condition
     return Execute().unless_condition(condition).run()

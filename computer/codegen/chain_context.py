@@ -9,9 +9,11 @@ CHAIN_CONTEXT_STACK: list["ChainContext"] = []
 
 class ChainContext:
     contents: list[Command]
+    only_chain: bool
 
-    def __init__(self):
+    def __init__(self, chain_headed: bool = False):
         self.contents = []
+        self.only_chain = chain_headed
 
     def __enter__(self):
         CHAIN_CONTEXT_STACK.append(self)
@@ -21,7 +23,7 @@ class ChainContext:
         CHAIN_CONTEXT_STACK.pop()
 
     def write(self, file, pos: Coordinates):
-        chain(file, pos, self.contents)
+        chain(file, pos, self.contents, only_chain=self.only_chain)
 
     def add(self, the_command: Command):
         self.contents.append(the_command)
@@ -43,11 +45,13 @@ def init_command(cmd: Command):
 class ChainGroup:
     chain_contexts: list[ChainContext]
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.chain_contexts = []
+        self.args = args
+        self.kwargs = kwargs
 
-    def new(self) -> ChainContext:
-        chain_context = ChainContext()
+    def new(self, *args, **kwargs) -> ChainContext:
+        chain_context = ChainContext(*(self.args + args), **(self.kwargs | kwargs))
         self.chain_contexts.append(chain_context)
         return chain_context
 
