@@ -11,9 +11,9 @@ class ChainContext:
     contents: list[Command]
     only_chain: bool
 
-    def __init__(self, chain_headed: bool = False):
+    def __init__(self, only_chain: bool = False):
         self.contents = []
-        self.only_chain = chain_headed
+        self.only_chain = only_chain
 
     def __enter__(self):
         CHAIN_CONTEXT_STACK.append(self)

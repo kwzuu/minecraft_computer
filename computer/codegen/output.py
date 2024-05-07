@@ -27,7 +27,7 @@ def chain(
         facing="east",
         only_chain=False,
 ):
-    if len(commands) == 0:
+    if len(commands) == 0 and not only_chain:
         raise ValueError("chains must have at least one command")
     it = iter(commands)
     if not only_chain:
