@@ -2,7 +2,7 @@ from computer.codegen import coordinates
 from computer.codegen.block import Block
 from computer.codegen.chain_context import command
 from computer.codegen.command import Command
-from computer.codegen.coordinates import Coordinates, RelativeCoordinates
+from computer.codegen.coordinates import Coordinates
 from computer.codegen.entity import Entity
 from computer.codegen.execute import Execute
 from computer.codegen.variable import Variable
@@ -76,7 +76,7 @@ def memory_store(index: Variable, src: Variable):
 
     barrel = Block(coordinates.CURRENT)
 
-    high_half = src // 64
+    high_half = src / 64
     high_half += 1
     low_half = src % 64
     low_half += 1
