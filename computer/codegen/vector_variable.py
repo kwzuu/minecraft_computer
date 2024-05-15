@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from computer.codegen.chain_context import init_command
-from computer.codegen.command import Command
 from computer.codegen.variable import Variable
 from computer.codegen.coordinates import Coordinates
 

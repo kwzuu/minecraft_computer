@@ -1,5 +1,4 @@
 from computer.codegen.chain_context import ChainGroup, command
-from computer.codegen.command import Command
 from computer.codegen.coordinates import Coordinates
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
