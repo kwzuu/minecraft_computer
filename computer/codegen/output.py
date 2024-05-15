@@ -32,9 +32,10 @@ def chain(
     it = iter(commands)
     if not only_chain:
         command_block(file, pos, next(it).command, kind=start_block + f"[facing={facing}]")
-    for command in it:
         pos += grow
+    for command in it:
         command_block(file, pos, command.command, kind=f"minecraft:chain_command_block[facing={facing}]", auto=True)
+        pos += grow
 
 
 def run_schematic_assembler(src, dst):

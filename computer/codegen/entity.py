@@ -61,7 +61,7 @@ class Entity(StoreLocation, Condition):
                 self.set_nbt("Pos[1]", y, "double")
                 self.set_nbt("Pos[2]", z, "double")
             case Coordinates() as c:
-                command(f"tp {c.double()}")
+                command(f"tp {self.selector()} {c.double()}")
             case _:
                 raise ValueError(f"{coords}")
 

@@ -23,6 +23,8 @@ class VectorVariable:
                 self.z = z
             case (Coordinates(x, y, z), ):
                 self.__init__(name, x, y, z)
+            case ():
+                self.__init__(name, 0, 0, 0)
             case x:
                 raise ValueError(f"invalid arguments: {x}")
 

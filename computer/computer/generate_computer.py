@@ -199,7 +199,7 @@ def arithmetic_instructions() -> ChainGroup:
                 GT.set(0)
         binary_op(cmp)
     with group.new():  # mov from scratch
-        store_gpr()
+        pass
     with group.new():  # mov into scratch
         pass
     with group.new():  # memory load

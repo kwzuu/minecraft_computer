@@ -56,10 +56,18 @@ class RelativeCoordinates(Coordinates):
     y_relative: bool
     z_relative: bool
 
-    def __init__(self, x: int | str, y: int | str, z: int | str):
+    def __init__(self, x: int | str, y: int | str, z: int | str, x_relative=None, y_relative=None, z_relative=None):
         x, self.x_relative = parse_arg(x)
         y, self.y_relative = parse_arg(y)
         z, self.z_relative = parse_arg(z)
+
+        if x_relative is not None:
+            self.x_relative = x_relative
+        if y_relative is not None:
+            self.y_relative = y_relative
+        if z_relative is not None:
+            self.z_relative = z_relative
+
         super().__init__(x, y, z)
 
     def __format__(self, format_spec) -> str:
@@ -68,6 +76,19 @@ class RelativeCoordinates(Coordinates):
         z = show_coord(self.z, self.z_relative)
 
         return f"{x} {y} {z}"
+
+    def __add__(self, other):
+        return RelativeCoordinates(
+            self.x + other.x,
+            self.y + other.y,
+            self.z + other.z,
+            self.x_relative,
+            self.y_relative,
+            self.z_relative
+        )
+
+    def double(self) -> str:
+        return f"{self}"
 
 
 CURRENT = RelativeCoordinates("~", "~", "~")

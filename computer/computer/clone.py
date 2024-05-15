@@ -5,7 +5,7 @@ from computer.codegen.entity import Entity
 from computer.codegen.execute import Execute
 from computer.codegen.vector_variable import VectorVariable
 
-TEMP_BUF_BASE = Coordinates(0, -128, 0)
+TEMP_BUF_BASE = Coordinates(0, -32, 0)
 TEMP_BUF_SIZE = Coordinates(64, 64, 64)
 TEMP_BUF_END = TEMP_BUF_BASE + TEMP_BUF_SIZE
 INDIRECT = Entity("minecraft:armor_stand")
