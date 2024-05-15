@@ -7,14 +7,14 @@ from computer.codegen.output import assemble_schematic
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 from computer.computer import registers
-from computer.computer.clone import initialize_indirection, execute_arbitrary_code
+from computer.computer.clone import initialize_cloning, execute_arbitrary_code
 from computer.computer.memory import initialize_memory, memory_load
-from computer.computer.registers import OPCODE, JUMPED, REGISTER_BANK_POS, load_gpr, store_gpr, LF, LE, EQ, GE, GT, NE
+from computer.computer.registers import OPCODE, JUMPED, REGISTER_BANK_POS, set_gpr, get_gpr, LF, LE, EQ, GE, GT, NE
 
 
 def initialize_computer():
     initialize_memory()
-    initialize_indirection()
+    initialize_cloning()
 
 
 MAIN_GROUP_POS = Coordinates(0, 0, 0)
@@ -138,15 +138,15 @@ def arithmetic_instructions() -> ChainGroup:
         execute_arbitrary_code(indirect, 50)
 
     def binary_op(f):
-        store_gpr(dst_arg, a)
-        store_gpr(src_arg, b)
+        get_gpr(dst_arg, a)
+        get_gpr(src_arg, b)
         f(a, b)
-        load_gpr(dst_arg, a)
+        set_gpr(dst_arg, a)
 
     def unary_op(f):
-        store_gpr(src_arg, a)
+        get_gpr(src_arg, a)
         f(a)
-        load_gpr(src_arg, a)
+        set_gpr(src_arg, a)
 
     # first eight: simple binary operations
     with group.new():  # move

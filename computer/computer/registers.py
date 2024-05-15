@@ -9,11 +9,17 @@ from computer.computer.clone import TEMP_BUF_BASE
 REGISTER_BANK_POS = Coordinates(0, 5, 0)
 
 with INIT_CONTEXT:
+    # register used for building constants
     CONSTANT_REGISTER = Variable("cr")
+    # register that points to the next instruction to execute
     INSTRUCTION_POINTER = Variable("ip")
-    STACK_POINTER = Variable("sp")
-    BASE_POINTER = Variable("bp")
+    # register that points to the top of the stack
+    STACK_POINTER = Variable("sp", 4095)
+    # register that points to the bottom of the current stack frame
+    BASE_POINTER = Variable("bp", 4095)
+    # variable that contains the current opcode
     OPCODE = Variable("opcode")
+    # variable that says whether a jump occurred this cycle
     JUMPED = Variable("jumped")
 
     # source and destination for micro-ops
@@ -53,34 +59,49 @@ GP_REGISTERS = [A0, A1, A2, T0, T1, S0, S1, S2]
 SCRATCH_REGISTERS = [X0, X1, X2, X3, Y0, Y1, Y2, Y3]
 
 
-def initialize_registers():
-    reset_registers()
+def initialize_registers() -> None:
+    """
+    initializes the registers
+    """
     REGISTER_FETCHER.create()
 
 
-def reset_registers():
+def reset_registers() -> None:
+    """
+    resets the registers to their value at startup
+    """
     CONSTANT_REGISTER.set(0)
     INSTRUCTION_POINTER.set(0)
     OPCODE.set(0)
     JUMPED.set(0)
+
     SRC.set(0)
     DST.set(0)
+
+    LF.set(0)
+    LE.set(0)
+    EQ.set(0)
+    GE.set(0)
+    GT.set(0)
+    NE.set(0)
+
     STACK_POINTER.set(4095)
     BASE_POINTER.set(4095)
+
     for i in GP_REGISTERS + SCRATCH_REGISTERS:
         i.set(0)
 
 
+# entity that performs register loads and stores
 REGISTER_FETCHER = Entity("minecraft:armor_stand")
 
 
-def register_op(kind: int, reg: Variable):
+def register_op(kind: int, reg_id: Variable) -> None:
     """
     generates an operation to load or store a register
     for internal use
     :param kind: the kind of operation to perform
-    :param reg: the register to load from or store into
-    :return:
+    :param reg_id: the index of the register to load from or store into
     """
     if not 0 <= kind < 8:
         raise ValueError
@@ -88,7 +109,7 @@ def register_op(kind: int, reg: Variable):
     # y: constant
     # z: kind
     REGISTER_FETCHER.set_pos(REGISTER_BANK_POS + Coordinates(0, 0, kind))
-    REGISTER_FETCHER.set_nbt("Pos[0]", reg, "double")
+    REGISTER_FETCHER.set_nbt("Pos[0]", reg_id, "double")
     (
         Execute()
         .at_entity(REGISTER_FETCHER)
@@ -98,23 +119,43 @@ def register_op(kind: int, reg: Variable):
     command("")
 
 
-def load_gpr(reg: Variable, src: Variable):
+def set_gpr(reg_id: Variable, src: Variable) -> None:
+    """
+    loads a variable into a general-purpose register
+    :param reg_id: the register id to use
+    :param src: the variable to load from
+    """
     SRC.set(src)
-    register_op(0, reg)
+    register_op(0, reg_id)
 
 
-def store_gpr(reg: Variable, dst: Variable):
-    register_op(1, reg)
+def get_gpr(reg_id: Variable, dst: Variable) -> None:
+    """
+    stores a general-purpose register into a variable
+    :param reg_id: the register id to use
+    :param dst: the variable to store to
+    """
+    register_op(1, reg_id)
     dst.set(DST)
 
 
-def load_scratch(reg: Variable, src: Variable):
+def set_scratch(reg_id: Variable, src: Variable):
+    """
+    loads a variable into a scratch register
+    :param reg_id: the register id to use
+    :param src: the variable to load from
+    """
     SRC.set(src)
-    register_op(2, reg)
+    register_op(2, reg_id)
 
 
-def store_scratch(reg: Variable, dst: Variable):
-    register_op(3, reg)
+def get_scratch(reg_id: Variable, dst: Variable):
+    """
+    stores a scratch register into a variable
+    :param reg_id: the register id to use
+    :param dst: the variable to store to
+    """
+    register_op(3, reg_id)
     dst.set(DST)
 
 
@@ -139,6 +180,10 @@ def generate_register_stores(var: Variable, registers: list[Variable]) -> None:
 
 
 def register_group() -> ChainGroup:
+    """
+    creates the group that contains commands to load and store each register
+    :return: the group
+    """
     group = ChainGroup()
     with group.new(only_chain=True):
         generate_register_loads(SRC, GP_REGISTERS)

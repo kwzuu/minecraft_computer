@@ -9,6 +9,10 @@ from computer.codegen.execute import StoreLocation
 
 @dataclass
 class ItemSlot(StoreLocation):
+    """
+    an item slot in an inventory
+    """
+
     block: Block
     slot: int
 
@@ -25,6 +29,10 @@ class ItemSlot(StoreLocation):
 
 @dataclass
 class Block(StoreLocation):
+    """
+    representation of a block entity
+    """
+
     position: Coordinates
 
     def store_location(self, *args) -> str:
@@ -39,4 +47,9 @@ class Block(StoreLocation):
                 raise ValueError
 
     def slot(self, slot: int) -> ItemSlot:
+        """
+        returns a representation for a slot in this block entity's inventory
+        :param slot: the index of the slot to use
+        :return: the representation for the slot
+        """
         return ItemSlot(self, slot)

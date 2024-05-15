@@ -1,5 +1,8 @@
 - [X] find out why chains are spawning at different spots
 - [X] write a small-scale test for indirection (e.g. four-function calculator)
+- [ ] documentation
+  - [X] python
+  - [ ] rust
 - [ ] implement the instructions
 	- [ ] arithmetic
 	- [ ] jumps

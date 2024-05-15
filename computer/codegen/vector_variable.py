@@ -5,6 +5,11 @@ from computer.codegen.coordinates import Coordinates
 
 
 class VectorVariable:
+    """
+    Three runtime scoreboard variables in a trenchcoat.
+    More specifically, a vector of three integers.
+    Intended for use in representing coordinates at runtime.
+    """
     __match_args__ = "x", "y", "z"
 
     def __init__(self, name: str, *args):
@@ -27,6 +32,10 @@ class VectorVariable:
                 raise ValueError(f"invalid arguments: {x}")
 
     def delete(self):
+        """
+        deletes all the variables used to create this vector.
+        :return:
+        """
         self.x.delete()
         self.y.delete()
         self.z.delete()

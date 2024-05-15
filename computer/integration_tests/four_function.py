@@ -2,10 +2,14 @@ from computer.codegen.chain_context import ChainGroup, command
 from computer.codegen.coordinates import Coordinates
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
-from computer.computer.clone import execute_arbitrary_code, initialize_indirection
+from computer.computer.clone import execute_arbitrary_code, initialize_cloning
 
 
-def four_function(file):
+def four_function(file) -> None:
+    """
+    integration test for a four-function calculator using indirection
+    :param file: the file to write out to
+    """
     main_group = ChainGroup()
     with main_group.new():
         # initialization
@@ -15,7 +19,7 @@ def four_function(file):
         b = Variable("b")
         op = Variable("op")
         dst = Variable("dst")
-        initialize_indirection()
+        initialize_cloning()
     with main_group.new():
         # main logic
         indirect = VectorVariable("indirect", 0, 0, 0)

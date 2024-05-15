@@ -22,7 +22,7 @@ def initialize_memory():
         '{Slot:0b,id:"minecraft:stone",Count:1b},'
         '{Slot:1b,id:"minecraft:stone",Count:1b}'
         ']}')
-    MEMORY_GETTER.create_if_not_exists()
+    MEMORY_GETTER.create()
 
 
 def reset_memory():
