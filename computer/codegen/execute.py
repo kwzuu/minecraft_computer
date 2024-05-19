@@ -133,7 +133,7 @@ class Execute:
         :return: returns a `Run` instance if no command is specified.
         """
         if cmd is not None:
-            self.parts.append(f"run {cmd}")
+            self.parts.append(f"run {cmd.command}")
             command("execute " + " ".join(self.parts))
         else:
             return Run(self)

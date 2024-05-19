@@ -10,6 +10,7 @@ use schematic_writer::blocks::{BlockEntity, BlocksBuilder};
 use schematic_writer::{Metadata, Schematic, SchematicBuilder};
 use crate::LineParseError::{EarlyEnd, IntParseError, NbtParseError};
 
+/// Represents a line of schematic assembly
 #[derive(Debug)]
 struct Line {
     position: (u16, u16, u16),
@@ -17,6 +18,7 @@ struct Line {
     nbt: Option<NbtCompound>
 }
 
+/// An error in parsing a line
 #[derive(Debug)]
 enum LineParseError {
     EarlyEnd,
@@ -31,6 +33,7 @@ impl From<SnbtError> for LineParseError {
 }
 
 impl Line {
+    /// parses a string into a line
     fn parse(s: &str) -> Result<Line, LineParseError> {
         let mut split = s.splitn(5, ' ');
 
@@ -58,6 +61,7 @@ impl Line {
     }
 }
 
+/// reads the headers present at the start of a file
 fn read_headers<I: Iterator<Item=String>>(lines: &mut I) -> HashMap<String, String> {
     let mut m = HashMap::new();
 
@@ -65,13 +69,16 @@ fn read_headers<I: Iterator<Item=String>>(lines: &mut I) -> HashMap<String, Stri
         if line.len() == 0 {
             break;
         } else {
-
+            let index = line.find("=")
+                .expect("error in reading headers: no `=' present");
+            m.insert(line[..index].to_string(), line[index+1..].to_string());
         }
     }
 
     m
 }
 
+/// creates a schematic from a file
 fn make_schematic(lines: Vec<Line>) -> Schematic {
     let mut builder = BlocksBuilder::new();
     for line in lines {

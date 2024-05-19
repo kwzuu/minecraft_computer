@@ -122,9 +122,9 @@ class RelativeCoordinates(Coordinates):
 
     def __add__(self, other):
         return RelativeCoordinates(
-            self.x + other.x,
-            self.y + other.y,
-            self.z + other.z,
+            self._x + other.x,
+            self._y + other.y,
+            self._z + other.z,
             self.x_relative,
             self.y_relative,
             self.z_relative
