@@ -1,9 +1,9 @@
 from computer.codegen.chain_context import ChainGroup, INIT_CONTEXT
-from computer.codegen.coordinates import Coordinates
 from computer.codegen.execute import run_if, run_else
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 from computer.computer.clone import execute_arbitrary_code
+from computer.computer.layout import ARITHMETIC_GROUP_POS, BINARY_OP_BASE, UNARY_OP_BASE
 from computer.computer.memory import memory_load, memory_store
 from computer.computer.registers import OPCODE, get_gpr, set_gpr, LF, LE, EQ, NE, GE, GT, get_scratch, set_scratch
 
@@ -17,9 +17,6 @@ def arithmetic_instructions() -> ChainGroup:
 
     src_arg: Variable
     dst_arg: Variable
-
-    BINARY_OP_BASE = ARITHMETIC_GROUP_POS + Coordinates(0, 0, 1)
-    UNARY_OP_BASE = ARITHMETIC_GROUP_POS + Coordinates(0, 0, 13)
 
     with (group.new()):  # dispatch
         binary_offset = OPCODE.clone()
@@ -136,7 +133,6 @@ def arithmetic_instructions() -> ChainGroup:
 
         memory_store(a, b)
 
-
     # next eight: simple unary operations
     with group.new():  # load from cr
         pass
@@ -174,6 +170,3 @@ def arithmetic_instructions() -> ChainGroup:
         pass
 
     return group
-
-
-ARITHMETIC_GROUP_POS = Coordinates(0, 1, 0)

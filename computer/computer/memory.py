@@ -2,15 +2,12 @@ from computer.codegen import coordinates
 from computer.codegen.block import Block
 from computer.codegen.chain_context import command
 from computer.codegen.command import Command
-from computer.codegen.coordinates import Coordinates
 from computer.codegen.entity import Entity
 from computer.codegen.execute import Execute
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
+from computer.computer.layout import MEM_END, MEM_BASE
 
-MEM_BASE = Coordinates(0, 128, 0)
-MEM_SIZE = Coordinates(16, 16, 16)
-MEM_END = MEM_BASE + MEM_SIZE - Coordinates(1, 1, 1)
 MEMORY_GETTER = Entity("minecraft:armor_stand")
 
 

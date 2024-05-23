@@ -4,9 +4,7 @@ from computer.codegen.coordinates import Coordinates
 from computer.codegen.entity import Entity
 from computer.codegen.execute import Execute
 from computer.codegen.variable import Variable
-from computer.computer.clone import TEMP_BUF_BASE
-
-REGISTER_BANK_POS = Coordinates(0, 5, 0)
+from computer.computer.layout import TEMP_BUF_BASE, REGISTER_BANK_POS
 
 with INIT_CONTEXT:
     # register used for building constants
