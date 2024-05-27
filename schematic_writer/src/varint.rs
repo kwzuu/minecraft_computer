@@ -9,14 +9,14 @@ pub(crate) struct VarintArray {
 
 impl VarintArray {
     /// take the buffer
-    pub fn take(self) -> Vec<i8> {
-        self.bytes
-    }
+    // pub fn take(self) -> Vec<i8> {
+    //     self.bytes
+    // }
 
     /// retrieve a reference to the buffer
-    pub fn bytes(&self) -> &[i8] {
-        &self.bytes
-    }
+    // pub fn bytes(&self) -> &[i8] {
+    //     &self.bytes
+    // }
 
     /// create a new array
     pub fn new() -> Self {
@@ -41,30 +41,30 @@ impl VarintArray {
         }
     }
 
-    pub(crate) fn push_u64(&mut self, mut value: u64) {
-        const SEGMENT_BITS: u64 = 0x7f;
-        const CONTINUE_BIT: u64 = 0x80;
+    // pub(crate) fn push_u64(&mut self, mut value: u64) {
+    //     const SEGMENT_BITS: u64 = 0x7f;
+    //     const CONTINUE_BIT: u64 = 0x80;
+    //
+    //     loop {
+    //         if value & !SEGMENT_BITS == 0 {
+    //             self.push_byte(value as u8);
+    //             return;
+    //         }
+    //
+    //         self.push_byte((value & SEGMENT_BITS | CONTINUE_BIT) as u8);
+    //         value >>= 7;
+    //     }
+    // }
 
-        loop {
-            if value & !SEGMENT_BITS == 0 {
-                self.push_byte(value as u8);
-                return;
-            }
+    // /// push an integer to the array
+    // pub fn push_int(&mut self, value: i32) {
+    //     self.push_u32(u32::from_ne_bytes(value.to_ne_bytes()));
+    // }
 
-            self.push_byte((value & SEGMENT_BITS | CONTINUE_BIT) as u8);
-            value >>= 7;
-        }
-    }
-
-    /// push an integer to the array
-    pub fn push_int(&mut self, value: i32) {
-        self.push_u32(u32::from_ne_bytes(value.to_ne_bytes()));
-    }
-
-    /// push a long to the array
-    pub fn push_long(&mut self, value: i64) {
-        self.push_u64(u64::from_ne_bytes(value.to_ne_bytes()));
-    }
+    // /// push a long to the array
+    // pub fn push_long(&mut self, value: i64) {
+    //     self.push_u64(u64::from_ne_bytes(value.to_ne_bytes()));
+    // }
 
     pub fn into_nbt(self) -> NbtTag {
         NbtTag::ByteArray(self.bytes)
@@ -75,16 +75,16 @@ impl VarintArray {
 mod tests {
     use super::*;
 
-    fn varlong(i: i64) -> Vec<i8> {
-        let mut a = VarintArray::new();
-        a.push_long(i);
-        a.take()
-    }
-    fn varint(i: i32) -> Vec<i8> {
-        let mut a = VarintArray::new();
-        a.push_int(i);
-        a.take()
-    }
+    // fn varlong(i: i64) -> Vec<i8> {
+    //     let mut a = VarintArray::new();
+    //     a.push_long(i);
+    //     a.take()
+    // }
+    // fn varint(i: i32) -> Vec<i8> {
+    //     let mut a = VarintArray::new();
+    //     a.push_int(i);
+    //     a.take()
+    // }
 
     #[test]
     fn test_varint() {

@@ -8,7 +8,12 @@ from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 from computer.computer.layout import MEM_END, MEM_BASE
 
+
 MEMORY_GETTER = Entity("minecraft:armor_stand")
+
+
+high_half: Variable
+low_half: Variable
 
 
 def initialize_memory():
@@ -20,6 +25,9 @@ def initialize_memory():
         '{Slot:1b,id:"minecraft:stone",Count:1b}'
         ']}')
     MEMORY_GETTER.create()
+    global high_half, low_half
+    high_half = Variable("high_half", 0)
+    low_half = Variable("low_half", 0)
 
 
 def reset_memory():
@@ -44,9 +52,9 @@ def move_getter_to_index(index: Variable):
 
 
 def memory_load(index: Variable, dest: Variable):
+    global high_half
     move_getter_to_index(index)
 
-    high_half = Variable("high_half", 0)
 
     (
         Execute()
@@ -69,13 +77,16 @@ def memory_load(index: Variable, dest: Variable):
 
 
 def memory_store(index: Variable, src: Variable):
+    global high_half, low_half
     move_getter_to_index(index)
 
     barrel = Block(coordinates.CURRENT)
 
-    high_half = src / 64
+    high_half.set(src)
+    high_half /= 64
     high_half += 1
-    low_half = src % 64
+    low_half.set(src)
+    low_half %= 64
     low_half += 1
 
     (
@@ -94,23 +105,23 @@ def memory_store(index: Variable, src: Variable):
 
 
 def push(src: Variable):
-    from registers import STACK_POINTER
+    from computer.computer.registers import STACK_POINTER
     memory_store(STACK_POINTER, src)
     STACK_POINTER -= 1
 
 
 def pop(dst: Variable):
-    from registers import STACK_POINTER
+    from computer.computer.registers import STACK_POINTER
     STACK_POINTER += 1
     memory_load(STACK_POINTER, dst)
 
 
 def call(ptr: Variable):
-    from registers import INSTRUCTION_POINTER
+    from computer.computer.registers import INSTRUCTION_POINTER
     push(INSTRUCTION_POINTER + 1)
     INSTRUCTION_POINTER.set(ptr)
 
 
 def ret():
-    from registers import INSTRUCTION_POINTER
+    from computer.computer.registers import INSTRUCTION_POINTER
     pop(INSTRUCTION_POINTER)

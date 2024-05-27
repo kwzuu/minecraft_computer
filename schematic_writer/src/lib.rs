@@ -49,7 +49,7 @@ impl Metadata {
 }
 
 #[derive(Clone)]
-struct Biomes {
+pub struct Biomes {
     palette: Palette,
     data: VarintArray,
 }
@@ -64,7 +64,7 @@ impl Biomes {
 }
 
 #[derive(Clone)]
-struct Entities {}
+pub struct Entities {}
 
 impl Entities {
     fn into_nbt(self) -> NbtCompound {

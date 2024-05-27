@@ -44,8 +44,6 @@ def jump_instructions() -> ChainGroup:
         position = VectorVariable("target", x_coord, y_coord, z_coord)
         execute_arbitrary_code(position, 16)
 
-
-
     with group.new():  # jump if less than
         with run_if(LF > 0):
             INSTRUCTION_POINTER.set(address)

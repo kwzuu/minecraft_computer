@@ -61,9 +61,9 @@ impl Blocks {
         nbt
     }
 
-    pub(crate) fn to_nbt(&self) -> NbtCompound {
-        self.clone().into_nbt()
-    }
+    // pub(crate) fn to_nbt(&self) -> NbtCompound {
+    //     self.clone().into_nbt()
+    // }
 }
 
 #[derive(Debug)]

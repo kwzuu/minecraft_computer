@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::io::{BufRead, BufReader, BufWriter};
 use std::io;
 use std::fs::File;
@@ -62,21 +61,21 @@ impl Line {
 }
 
 /// reads the headers present at the start of a file
-fn read_headers<I: Iterator<Item=String>>(lines: &mut I) -> HashMap<String, String> {
-    let mut m = HashMap::new();
-
-    while let Some(line) = lines.next() {
-        if line.len() == 0 {
-            break;
-        } else {
-            let index = line.find("=")
-                .expect("error in reading headers: no `=' present");
-            m.insert(line[..index].to_string(), line[index+1..].to_string());
-        }
-    }
-
-    m
-}
+// fn read_headers<I: Iterator<Item=String>>(lines: &mut I) -> HashMap<String, String> {
+//     let mut m = HashMap::new();
+//
+//     while let Some(line) = lines.next() {
+//         if line.len() == 0 {
+//             break;
+//         } else {
+//             let index = line.find("=")
+//                 .expect("error in reading headers: no `=' present");
+//             m.insert(line[..index].to_string(), line[index+1..].to_string());
+//         }
+//     }
+//
+//     m
+// }
 
 /// creates a schematic from a file
 fn make_schematic(lines: Vec<Line>) -> Schematic {
@@ -128,7 +127,7 @@ fn main() -> io::Result<()> {
 
     let schematic = make_schematic(lines);
     let nbt = schematic.into_nbt();
-    let mut output= File::create(out_filename)?;
+    let output= File::create(out_filename)?;
 
     write_nbt(
         &mut BufWriter::new(output),

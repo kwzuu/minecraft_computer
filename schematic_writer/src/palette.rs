@@ -37,9 +37,9 @@ impl Palette {
         self.palette
     }
 
-    pub(crate) fn to_nbt(&self) -> NbtCompound {
-        self.palette.clone()
-    }
+    // pub(crate) fn to_nbt(&self) -> NbtCompound {
+    //     self.palette.clone()
+    // }
 }
 
 #[cfg(test)]
