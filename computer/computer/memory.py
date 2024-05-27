@@ -111,6 +111,6 @@ def call(ptr: Variable):
     INSTRUCTION_POINTER.set(ptr)
 
 
-def ret(ptr: Variable):
+def ret():
     from registers import INSTRUCTION_POINTER
     pop(INSTRUCTION_POINTER)

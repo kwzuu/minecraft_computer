@@ -22,3 +22,7 @@ TEMP_BUF_END = TEMP_BUF_BASE + TEMP_BUF_SIZE
 MEM_BASE = Coordinates(0, 128, 0)
 MEM_SIZE = Coordinates(16, 16, 16)
 MEM_END = MEM_BASE + MEM_SIZE - Coordinates(1, 1, 1)
+
+SCREEN_BASE = Coordinates(-32, 0, -32)
+SCREEN_SIZE = Coordinates(160, 0, 10)
+SCREEN_END = SCREEN_BASE + SCREEN_SIZE

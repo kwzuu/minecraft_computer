@@ -51,3 +51,8 @@ class VectorVariable:
         self.y -= other.y
         self.z -= other.z
         return self
+
+    def set(self, other: Coordinates | VectorVariable):
+        self.x.set(other.x)
+        self.y.set(other.y)
+        self.z.set(other.z)

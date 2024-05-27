@@ -7,9 +7,12 @@ from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 from computer.computer import registers
 from computer.computer.arithmetic import arithmetic_instructions
+from computer.computer.card import card_instructions
+from computer.computer.jump import jump_instructions
 from computer.computer.clone import initialize_cloning, execute_arbitrary_code
 from computer.computer.constant import constant_instructions
-from computer.computer.layout import MAIN_GROUP_POS, CONST_GROUP_POS, ARITHMETIC_GROUP_POS, REGISTER_BANK_POS
+from computer.computer.layout import MAIN_GROUP_POS, CONST_GROUP_POS, ARITHMETIC_GROUP_POS, REGISTER_BANK_POS, \
+    JUMP_GROUP_POS, CARD_GROUP_POS
 from computer.computer.memory import initialize_memory, memory_load
 from computer.computer.registers import OPCODE, JUMPED
 
@@ -23,40 +26,21 @@ def primary_chain():
     from computer.computer.registers import INSTRUCTION_POINTER
 
     memory_load(INSTRUCTION_POINTER, OPCODE)
-
-    secondary_opcode = Variable("secondary_opcode")
-    secondary_opcode.set(OPCODE)
+    INSTRUCTION_POINTER += 1
 
     high_bits = OPCODE.bitslice(10, 2, True)
-    group_y = high_bits + 1
+    position = VectorVariable("position")
 
     with run_if(high_bits == 0):  # arithmetic
-        secondary_opcode.bitslice(6, 4)
+        position.set(ARITHMETIC_GROUP_POS)
     with run_if(high_bits == 1):  # jump
-        pass
-    with run_if(high_bits == 2):  # const.asm
-        secondary_opcode.bitslice(8, 2)
+        position.set(JUMP_GROUP_POS)
+    with run_if(high_bits == 2):  # const
+        position.set(CONST_GROUP_POS)
     with run_if(high_bits == 3):  # card
-        secondary_opcode.bitslice(6, 4)
+        position.set(CARD_GROUP_POS)
 
-    # high_bits.equals(0).if_true(do_arithmetic.contents)
-    # high_bits.equals(1).if_true(do_jump.contents)
-    # high_bits.equals(2).if_true(do_const.contents)
-    # high_bits.equals(3).if_true(do_card.contents)
-
-    position = VectorVariable(
-        "position",
-        Variable.constant(0),
-        group_y,
-        secondary_opcode,
-    )
-
-    execute_arbitrary_code(position, 32)
-
-    with run_if(JUMPED == 0):
-        INSTRUCTION_POINTER += 1
-    with run_if(JUMPED == 1):
-        JUMPED.set(0)
+    execute_arbitrary_code(position, 100)
 
 
 def computer(file):
@@ -78,6 +62,12 @@ def computer(file):
 
     arithmetic_instruction_group = arithmetic_instructions()
     arithmetic_instruction_group.write_out(file, ARITHMETIC_GROUP_POS)
+
+    jump_instruction_group = jump_instructions()
+    jump_instruction_group.write_out(file, JUMP_GROUP_POS)
+
+    card_instruction_group = card_instructions()
+    card_instruction_group.write_out(file, CARD_GROUP_POS)
 
     register_group = registers.register_group()
     register_group.write_out(file, REGISTER_BANK_POS)

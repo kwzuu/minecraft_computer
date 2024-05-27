@@ -36,6 +36,8 @@ def smart_clone(
     """
     # offset size because /clone's borders are inclusive
     size += Coordinates(-1, -1, -1)
+    if size.x < 0 or size.y < 0 or size.z < 0:
+        raise ValueError("clone command size must be nonzero")
     # copy from source to buffer
     CLONER.set_pos(src)
     (

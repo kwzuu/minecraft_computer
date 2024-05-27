@@ -1,11 +1,13 @@
-from computer.codegen.chain_context import ChainGroup, INIT_CONTEXT
+from computer.codegen.chain_context import ChainGroup, INIT_CONTEXT, command
 from computer.codegen.execute import run_if, run_else
 from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
+from computer.computer import memory
 from computer.computer.clone import execute_arbitrary_code
 from computer.computer.layout import ARITHMETIC_GROUP_POS, BINARY_OP_BASE, UNARY_OP_BASE
 from computer.computer.memory import memory_load, memory_store
-from computer.computer.registers import OPCODE, get_gpr, set_gpr, LF, LE, EQ, NE, GE, GT, get_scratch, set_scratch
+from computer.computer.registers import OPCODE, get_gpr, set_gpr, LF, LE, EQ, NE, GE, GT, get_scratch, set_scratch, \
+    CONSTANT_REGISTER
 
 
 def arithmetic_instructions() -> ChainGroup:
@@ -15,8 +17,8 @@ def arithmetic_instructions() -> ChainGroup:
 
     group = ChainGroup(only_chain=True)
 
-    src_arg: Variable
-    dst_arg: Variable
+    first_argument: Variable
+    second_argument: Variable
 
     with (group.new()):  # dispatch
         binary_offset = OPCODE.clone()
@@ -27,12 +29,12 @@ def arithmetic_instructions() -> ChainGroup:
         unary_offset -= 1600
         unary_offset /= 8
 
-        src_arg = OPCODE.clone()
-        src_arg %= 8
+        first_argument = OPCODE.clone()
+        first_argument %= 8
 
-        dst_arg = OPCODE.clone()
-        dst_arg /= 8
-        dst_arg %= 8
+        second_argument = OPCODE.clone()
+        second_argument /= 8
+        second_argument %= 8
 
         indirect_x = Variable("arithmetic_indirect_x", ARITHMETIC_GROUP_POS.x)
         indirect_y = Variable("arithmetic_indirect_y", ARITHMETIC_GROUP_POS.y)
@@ -55,15 +57,15 @@ def arithmetic_instructions() -> ChainGroup:
         execute_arbitrary_code(indirect, 50)
 
     def binary_op(f):
-        get_gpr(dst_arg, a)
-        get_gpr(src_arg, b)
+        get_gpr(second_argument, a)
+        get_gpr(first_argument, b)
         f(a, b)
-        set_gpr(dst_arg, a)
+        set_gpr(second_argument, a)
 
     def unary_op(f):
-        get_gpr(src_arg, a)
+        get_gpr(first_argument, a)
         f(a)
-        set_gpr(src_arg, a)
+        set_gpr(first_argument, a)
 
     # first eight: simple binary operations
     with group.new():  # move
@@ -91,7 +93,7 @@ def arithmetic_instructions() -> ChainGroup:
             src /= 0o1000
         binary_op(split)
     with group.new():  # cmp
-        def cmp(dst: Variable, src: Variable):
+        def cmp(dst: Variable, src: Variable | int):
             with run_if(dst < src):
                 LF.set(1)
             with run_else():
@@ -117,56 +119,65 @@ def arithmetic_instructions() -> ChainGroup:
         binary_op(cmp)
 
     with group.new():  # mov from scratch
-        get_scratch(src_arg, a)
-        set_gpr(dst_arg, a)
+        get_scratch(first_argument, a)
+        set_gpr(second_argument, a)
     with group.new():  # mov into scratch
-        get_gpr(src_arg, a)
-        set_scratch(dst_arg, a)
+        get_gpr(first_argument, a)
+        set_scratch(second_argument, a)
     with group.new():  # memory load
-        get_gpr(src_arg, a)
-        get_gpr(dst_arg, b)
+        get_gpr(first_argument, a)
+        get_gpr(second_argument, b)
 
         memory_load(a, b)
     with group.new():  # memory store
-        get_gpr(dst_arg, a)
-        get_gpr(src_arg, b)
+        get_gpr(second_argument, a)
+        get_gpr(first_argument, b)
 
         memory_store(a, b)
 
     # next eight: simple unary operations
     with group.new():  # load from cr
-        pass
+        set_gpr(second_argument, CONSTANT_REGISTER)
     with group.new():  # increment
-        pass
+        get_gpr(second_argument, a)
+        a += 1
+        set_gpr(second_argument, a)
     with group.new():  # decrement
-        pass
+        get_gpr(second_argument, a)
+        a += 1
+        set_gpr(second_argument, a)
     with group.new():  # negate
-        pass
+        get_gpr(second_argument, a)
+        a *= -1
+        set_gpr(second_argument, a)
     with group.new():  # clear
-        pass
+        set_gpr(second_argument, Variable.constant(0))
     with group.new():  # arithmetic shift right 12
-        pass
+        second_argument /= Variable.constant(4096)
     with group.new():  # arithmetic shift left 12
-        pass
+        second_argument *= Variable.constant(4096)
     with group.new():  # RESERVED
-        pass
+        command("say ILLEGAL CALL OF RESERVED INSTRUCTION")
 
     # last eight: complex unary operations
     with group.new():  # compare with 0
-        pass
+        get_gpr(second_argument, a)
+        cmp(a, 0)
     with group.new():  # push to stack
-        pass
+        get_gpr(second_argument, a)
+        memory.push(a)
     with group.new():  # pop from stack
-        pass
+        memory.pop(a)
+        set_gpr(second_argument, a)
     with group.new():  # RESERVED
-        pass
+        command("say ILLEGAL CALL OF RESERVED INSTRUCTION")
     with group.new():  # RESERVED
-        pass
+        command("say ILLEGAL CALL OF RESERVED INSTRUCTION")
     with group.new():  # RESERVED
-        pass
+        command("say ILLEGAL CALL OF RESERVED INSTRUCTION")
     with group.new():  # RESERVED
-        pass
+        command("say ILLEGAL CALL OF RESERVED INSTRUCTION")
     with group.new():  # RESERVED
-        pass
+        command("say ILLEGAL CALL OF RESERVED INSTRUCTION")
 
     return group
