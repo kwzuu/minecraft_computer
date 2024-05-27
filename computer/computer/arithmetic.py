@@ -62,11 +62,6 @@ def arithmetic_instructions() -> ChainGroup:
         f(a, b)
         set_gpr(second_argument, a)
 
-    def unary_op(f):
-        get_gpr(first_argument, a)
-        f(a)
-        set_gpr(first_argument, a)
-
     # first eight: simple binary operations
     with group.new():  # move
         binary_op(Variable.set)

@@ -294,3 +294,6 @@ class Variable(StoreLocation):
         :return: the command
         """
         return Command(f"scoreboard players get {self.name} vars")
+
+    def matches(self, int_range: IntRange) -> VariableMatches:
+        return VariableMatches(self, int_range)
