@@ -11,7 +11,6 @@ from computer.computer.registers import OPCODE, INSTRUCTION_POINTER, CONSTANT_RE
 def jump_instructions() -> ChainGroup:
     group = ChainGroup()
 
-
     with group.new():  # dispatch
         address = Variable("address")
         x_coord = Variable("x_coord", JUMP_GROUP_POS.x)
@@ -67,6 +66,5 @@ def jump_instructions() -> ChainGroup:
     with group.new():  # call
         memory.push(INSTRUCTION_POINTER)
         INSTRUCTION_POINTER.set(address)
-
 
     return group
