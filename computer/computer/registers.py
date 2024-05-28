@@ -17,8 +17,8 @@ with INIT_CONTEXT:
     BASE_POINTER = Variable("bp", 4095)
     # variable that contains the current opcode
     OPCODE = Variable("opcode")
-    # variable that says whether a jump occurred this cycle
-    JUMPED = Variable("jumped")
+    # variable that contains the immediate operand for expansion card instructions
+    CARD_IMMEDIATE = Variable("card_immediate")
 
     # source and destination for micro-ops
     SRC = Variable("src")
@@ -71,7 +71,7 @@ def reset_registers() -> None:
     CONSTANT_REGISTER.set(0)
     INSTRUCTION_POINTER.set(0)
     OPCODE.set(0)
-    JUMPED.set(0)
+    CARD_IMMEDIATE.set(0)
 
     SRC.set(0)
     DST.set(0)
