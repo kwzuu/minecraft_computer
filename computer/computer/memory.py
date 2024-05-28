@@ -47,19 +47,17 @@ def move_getter_to_index(index: Variable):
     mem_index += mem_offset
 
     MEMORY_GETTER.set_pos(mem_index)
-    mem_index.delete()
-    mem_offset.delete()
 
 
 def memory_load(index: Variable, dest: Variable):
-    global high_half
-    move_getter_to_index(index)
+    memory_load_high_half = Variable("high_half")
 
+    move_getter_to_index(index)
 
     (
         Execute()
         .at_entity(MEMORY_GETTER)
-        .store_result(high_half)
+        .store_result(memory_load_high_half)
         .run(Command("data get block ~ ~ ~ Items[0].Count"))
     )
 
@@ -71,9 +69,9 @@ def memory_load(index: Variable, dest: Variable):
     )
 
     dest -= 1
-    high_half -= 1
-    high_half *= 64
-    dest += high_half
+    memory_load_high_half -= 1
+    memory_load_high_half *= 64
+    dest += memory_load_high_half
 
 
 def memory_store(index: Variable, src: Variable):

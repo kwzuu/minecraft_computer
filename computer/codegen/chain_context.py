@@ -64,6 +64,7 @@ def command(cmd: Command | str) -> None:
     """
     if isinstance(cmd, str):
         cmd = Command(cmd)
+    CHAIN_CONTEXT_STACK[-1].add(Command("say DEBUG: " + cmd.command))
     CHAIN_CONTEXT_STACK[-1].add(cmd)
 
 

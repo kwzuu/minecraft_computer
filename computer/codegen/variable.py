@@ -84,6 +84,7 @@ class Variable(StoreLocation):
     """
 
     def __init__(self, name: str, value: int = 0):
+        name = find_name(name)
         if name in registered_names:
             raise Exception(f"duplicate name: {name}")
         self.name = name
