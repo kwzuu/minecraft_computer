@@ -14,7 +14,7 @@ from computer.computer.constant import constant_instructions
 from computer.computer.layout import MAIN_GROUP_POS, CONST_GROUP_POS, ARITHMETIC_GROUP_POS, REGISTER_BANK_POS, \
     JUMP_GROUP_POS, CARD_GROUP_POS
 from computer.computer.memory import initialize_memory, memory_load
-from computer.computer.registers import OPCODE, JUMPED
+from computer.computer.registers import OPCODE
 
 
 def initialize_computer():
