@@ -7,7 +7,7 @@ from computer.computer.registers import OPCODE
 
 
 def card_instructions() -> ChainGroup:
-    group = ChainGroup()
+    group = ChainGroup(only_chain=True)
 
     with group.new():  # dispatch
         card_pos_x = Variable("card_pos_x", CARD_GROUP_POS.x)

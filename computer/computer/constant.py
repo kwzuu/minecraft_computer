@@ -13,7 +13,7 @@ def constant_instructions() -> ChainGroup:
     :return:
     """
     # group for constant instructions
-    group = ChainGroup()
+    group = ChainGroup(only_chain=True)
 
     with group.new():  # dispatch
         const_pos_x = Variable("const_pos_x", CONST_GROUP_POS.x)

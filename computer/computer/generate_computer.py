@@ -3,7 +3,6 @@
 from computer.codegen.chain_context import ChainGroup, INIT_CONTEXT
 from computer.codegen.execute import run_if
 from computer.codegen.output import assemble_schematic
-from computer.codegen.variable import Variable
 from computer.codegen.vector_variable import VectorVariable
 from computer.computer import registers
 from computer.computer.arithmetic import arithmetic_instructions

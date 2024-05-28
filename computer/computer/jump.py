@@ -9,7 +9,7 @@ from computer.computer.registers import OPCODE, INSTRUCTION_POINTER, CONSTANT_RE
 
 
 def jump_instructions() -> ChainGroup:
-    group = ChainGroup()
+    group = ChainGroup(only_chain=True)
 
     with group.new():  # dispatch
         address = Variable("address")
