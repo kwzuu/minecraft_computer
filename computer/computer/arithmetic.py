@@ -8,10 +8,12 @@ from computer.computer.layout import ARITHMETIC_GROUP_POS, BINARY_OP_BASE, UNARY
 from computer.computer.memory import memory_load, memory_store
 from computer.computer.registers import OPCODE, get_gpr, set_gpr, LF, LE, EQ, NE, GE, GT, get_scratch, set_scratch, \
     CONSTANT_REGISTER
+from computer.computer.logging import log
 
 
 def arithmetic_instructions() -> ChainGroup:
     with INIT_CONTEXT:
+        log("init: initialize a and b")
         a = Variable("a")
         b = Variable("b")
 
@@ -21,18 +23,19 @@ def arithmetic_instructions() -> ChainGroup:
     second_argument: Variable
 
     with (group.new()):  # dispatch
-        binary_offset = OPCODE.clone()
+        log("dispatching arithmetic instruction")
+        binary_offset = OPCODE.clone("binary_offset")
         binary_offset /= 64
         binary_offset %= 8
 
-        unary_offset = OPCODE.clone()
+        unary_offset = OPCODE.clone("unary_offset")
         unary_offset -= 1600
         unary_offset /= 8
 
-        first_argument = OPCODE.clone()
+        first_argument = OPCODE.clone("first_argument")
         first_argument %= 8
 
-        second_argument = OPCODE.clone()
+        second_argument = OPCODE.clone("second_argument")
         second_argument /= 8
         second_argument %= 8
 
@@ -42,10 +45,12 @@ def arithmetic_instructions() -> ChainGroup:
 
         with run_if(OPCODE < 0o1600):
             # run binary op
+            log("running binary operation")
             indirect_z.set(BINARY_OP_BASE.z)
             indirect_z += binary_offset
         with run_if(OPCODE >= 0o1600):
             # run unary op
+            log("running unary operation")
             indirect_z.set(UNARY_OP_BASE.z)
             indirect_z += unary_offset
         indirect = VectorVariable(
@@ -134,6 +139,7 @@ def arithmetic_instructions() -> ChainGroup:
     with group.new():  # load from cr
         set_gpr(second_argument, CONSTANT_REGISTER)
     with group.new():  # increment
+        log("incrementing")
         get_gpr(second_argument, a)
         a += 1
         set_gpr(second_argument, a)

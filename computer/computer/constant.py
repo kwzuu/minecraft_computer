@@ -21,7 +21,7 @@ def constant_instructions() -> ChainGroup:
         const_pos_z = Variable("const_pos_z", CONST_GROUP_POS.z)
 
         const_pos_z.set(OPCODE)
-        const_pos_z.bitslice(8, 2, 0)
+        const_pos_z.bitslice(8, 2, inplace=True)
         const_pos_z += 1
 
         const_pos = VectorVariable("const_pos", const_pos_x, const_pos_y, const_pos_z)

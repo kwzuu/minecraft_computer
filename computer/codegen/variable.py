@@ -209,7 +209,7 @@ class Variable(StoreLocation):
         if isinstance(other, Variable):
             return VariableComparison(self, "<", other)
         else:
-            return VariableMatches(self, other - 1)
+            return VariableMatches(self, IntRange(None, other - 1))
 
     def __le__(self, other) -> Condition:
         if isinstance(other, Variable):

@@ -12,4 +12,7 @@ def main():
     with open(argv[1]) as f:
         lines = f.readlines()
         for line in lines:
-            print("%04o" % listings.encode(line))
+            encoded = listings.encode(line)
+            hi = encoded // 64
+            lo = encoded % 64
+            print("%04o" % encoded, f"({hi}, {lo})")

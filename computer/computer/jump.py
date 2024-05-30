@@ -6,18 +6,21 @@ from computer.computer import memory
 from computer.computer.clone import execute_arbitrary_code
 from computer.computer.layout import JUMP_GROUP_POS
 from computer.computer.registers import OPCODE, INSTRUCTION_POINTER, CONSTANT_REGISTER, LF, LE, EQ, GE, GT, NE
+from computer.computer.logging import log
 
 
 def jump_instructions() -> ChainGroup:
     group = ChainGroup(only_chain=True)
 
     with group.new():  # dispatch
+        log("dispatching jump")
         address = Variable("address")
-        x_coord = Variable("x_coord", JUMP_GROUP_POS.x)
-        y_coord = Variable("y_coord", JUMP_GROUP_POS.y)
-        z_coord = Variable("z_coord", JUMP_GROUP_POS.z)
+        x_coord = Variable("jump_position_x", JUMP_GROUP_POS.x)
+        y_coord = Variable("jump_position_y", JUMP_GROUP_POS.y)
+        z_coord = Variable("jump_position_z", JUMP_GROUP_POS.z)
 
         with run_if(OPCODE < 0o3600):
+            log("running offset jump")
             # jump by offset
             offset = Variable("offset")
             offset.set(OPCODE)
@@ -29,6 +32,7 @@ def jump_instructions() -> ChainGroup:
             z_coord.bitslice(7, 3)
             z_coord += 1
         with run_if(OPCODE > 0o3777):
+            log("running absolute jump")
             # absolute jump
             high = Variable("high_part")
             high.set(OPCODE)
